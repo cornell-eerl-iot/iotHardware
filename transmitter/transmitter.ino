@@ -144,12 +144,12 @@ void loop()
   
   Serial.println("Sending...");
   delay(10);
-  rf95.send((uint8_t *)radiopacket, 20);
+  rf95.send((uint8_t *)radiopacket, 100);
 
   Serial.println("Waiting for packet to complete..."); 
   delay(10);
   rf95.waitPacketSent();
-  // Now wait for a reply
+  /*// Now wait for a reply
   uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
   uint8_t len = sizeof(buf);
 
@@ -162,7 +162,8 @@ void loop()
       Serial.print("Got reply: ");
       Serial.println((char*)buf);
       Serial.print("RSSI: ");
-      Serial.println(rf95.lastRssi(), DEC);    
+      Serial.println(rf95.lastRssi(), DEC);  
+        
     }
     else
     {
@@ -173,34 +174,8 @@ void loop()
   {
     Serial.println("No reply, is there a listener around?");
   }
- }
+*/
+ } 
 }
 
-/* void setup()
-{
-    Serial.begin(9600);                             // serial data rate is set for 9600bps(bits per second)
-    
-    pinMode(13,OUTPUT);
-    digitalWrite(13,LOW);
-}
-void loop()                                           // execute the loop forever
-{
-  
-     while (Serial.available()) {
-        String str1 = Serial.readStringUntil('!');
-        String str2 = Serial.readStringUntil('!');
-      
-        long times = str1.toInt();
-                  
-        
-        for(int i = 0;i<times;i++){
-                digitalWrite(13,HIGH);
-                delay(500);                                           // wait for 200 milli second
-                digitalWrite(13,LOW);                          // turn OFF the LED
-                delay(500);
-        }
-        Serial.println(str2);
-     }
-     
-} 
-*/
+
