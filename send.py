@@ -9,7 +9,16 @@ ser=serial.Serial(
 	bytesize=serial.EIGHTBITS,
 	timeout=1
 )
-counter="60"
-ser.write(counter)
+
+message="4!hi"
+ser.write(message)
 time.sleep(5)
-ser.close
+
+line= ''
+while True:
+	ser.write(message)
+	lineNew=ser.readLine()
+	if(line!=lineNew):
+		print(lineNew)
+
+ser.close()
