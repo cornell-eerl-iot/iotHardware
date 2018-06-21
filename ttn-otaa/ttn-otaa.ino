@@ -48,7 +48,7 @@ static const u1_t PROGMEM APPEUI[8]=  { 0x20, 0xFB, 0x00, 0xD0, 0x7E, 0xD5, 0xB3
 void os_getArtEui (u1_t* buf) { memcpy_P(buf, APPEUI, 8);}
 
 // This should also be in little endian format, see above.
-static const u1_t PROGMEM DEVEUI[8]= { 0x00, 0x60, 0xAF, 0x9B, 0x93, 0xF5, 0x2B, 0x93 };
+static const u1_t PROGMEM DEVEUI[8]= {  0x93, 0x2B, 0xF5, 0x93, 0x9B, 0xAF, 0x60, 0x00 };
 void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
 
 // This key should be in big endian format (or, since it is not really a
