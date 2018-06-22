@@ -33,7 +33,6 @@
 #include <hal/hal.h>
 #include <SPI.h>
 
-
 #ifdef COMPILE_REGRESSION_TEST
 # define FILLMEIN 0
 #else
