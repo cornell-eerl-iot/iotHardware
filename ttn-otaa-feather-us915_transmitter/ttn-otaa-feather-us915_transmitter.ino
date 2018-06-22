@@ -56,12 +56,14 @@ void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
 static const u1_t PROGMEM APPKEY[16] = { 0x21, 0xC8, 0x39, 0x66, 0x22, 0xEE, 0xF3, 0xDA, 0xAE, 0x2A, 0x92, 0x89, 0x82, 0x51, 0xD8, 0x29 };
 void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 
-static uint8_t mydata[] = "Wow Navin! Don't leave us!";
+static uint8_t mydata[51] = {1};
+
+
 static osjob_t sendjob;
 
 // Schedule TX every this many seconds (might become longer due to duty
 // cycle limitations).
-const unsigned TX_INTERVAL = 60;
+const unsigned TX_INTERVAL = 0.000;
 
 // Pin mapping
 const lmic_pinmap lmic_pins = {
@@ -172,18 +174,20 @@ void do_send(osjob_t* j){
         Serial.println(F("OP_TXRXPEND, not sending"));
     } else {
         // Prepare upstream data transmission at the next possible time.
-        LMIC_setTxData2(1, mydata, sizeof(mydata)-1, 0);
+        int a = LMIC_setTxData2(1, mydata, sizeof(mydata)-1, 0);
+        Serial.println(a);
         Serial.println(F("Packet queued"));
     }
     // Next TX is scheduled after TX_COMPLETE event.
 }
 
 void setup() {
-    delay(5000);
+    //delay(5000);
     while (! Serial)
         ;
     Serial.begin(9600);
     Serial.println(F("Starting"));
+    for(int i = 0; i < 50 ; mydata[i++] = -1);
 
     #ifdef VCC_ENABLE
     // For Pinoccio Scout boards
@@ -208,3 +212,4 @@ void setup() {
 void loop() {
     os_runloop_once();
 }
+
