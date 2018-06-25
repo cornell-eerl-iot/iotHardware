@@ -57,7 +57,7 @@ static const u1_t PROGMEM APPKEY[16] = { 0x21, 0xC8, 0x39, 0x66, 0x22, 0xEE, 0xF
 void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 
 static uint8_t mydata[51] = {1};
-
+int counter = 0;
 
 static osjob_t sendjob;
 
@@ -74,6 +74,7 @@ const lmic_pinmap lmic_pins = {
 };
 
 void onEvent (ev_t ev) {
+    Serial.print(F("Count: "));Serial.print(counter++, DEC);Serial.print(" : ");
     Serial.print(os_getTime());
     Serial.print(": ");
     switch(ev) {
@@ -174,8 +175,9 @@ void do_send(osjob_t* j){
         Serial.println(F("OP_TXRXPEND, not sending"));
     } else {
         // Prepare upstream data transmission at the next possible time.
-        int a = LMIC_setTxData2(1, mydata, sizeof(mydata)-1, 0);
-        Serial.println(a);
+        //int a = 
+        LMIC_setTxData2(1, mydata, sizeof(mydata)-1, 0);
+        //Serial.println(a);
         Serial.println(F("Packet queued"));
     }
     // Next TX is scheduled after TX_COMPLETE event.
@@ -187,8 +189,8 @@ void setup() {
         ;
     Serial.begin(9600);
     Serial.println(F("Starting"));
-    for(int i = 0; i < 50 ; mydata[i++] = -1);
-
+    for(int i = 0; i < 50 ; mydata[i++] = i);
+    
     #ifdef VCC_ENABLE
     // For Pinoccio Scout boards
     pinMode(VCC_ENABLE, OUTPUT);
@@ -204,6 +206,7 @@ void setup() {
     LMIC_setLinkCheckMode(0);
     LMIC_setDrTxpow(DR_SF7,14);
     LMIC_selectSubBand(1);
+    LMIC_setClockError(MAX_CLOCK_ERROR * 1 / 100);
 
     // Start job (sending automatically starts OTAA too)
     do_send(&sendjob);
