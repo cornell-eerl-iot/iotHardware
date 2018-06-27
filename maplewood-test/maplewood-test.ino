@@ -289,7 +289,7 @@ testing(3_platform_80_modbus)
 	assertTestPass(2_platform_80_modbus_init);
 	static enum : unsigned { stInitial, stDelay, stQuery, stPoll, stCheck, stNextDev, stNextTry } state = stInitial;
 	static unsigned iDevice;
-	static const uint8_t myDevices[] = { 1, 2 };
+	static const uint8_t myDevices[] = { 1 }; //Change according to the number of devices and their device id.
 	static uint32_t lastUptime[sizeof(myDevices)];
 	static uint32_t lastQueryStart;
 	static modbus_t telegram;
