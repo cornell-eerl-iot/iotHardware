@@ -1,0 +1,48 @@
+#!/bin/bash
+
+for inc in preferences sketchbook arduino_exe cache_ide
+do
+    if [ "$(type -t $inc)" != "function" ]
+    then
+	. "$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"/$inc
+    fi
+done
+
+arduino() {
+    ARDUINO_EXE="$(arduino_exe "$@")"
+
+    if [ ! -r "$ARDUINO_EXE" ]
+    then
+	echo "Arduido executable $ARDUINO_EXE missing (caching)..."
+	if ! cache_ide "$@"
+	then
+	    exit 1
+	fi
+    fi
+    "$ARDUINO_EXE" "$@"
+}
+
+arduino_self_test() {
+    arduino "$@" &
+    PID="$!"
+    if [ "${PID}" = "" ]
+    then
+        echo "no launch"
+        exit 1
+    fi
+    kill $PID
+
+    echo "arduino ok"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
+then
+    if [ "$1" == "--self-test" ]
+    then
+	shift
+	arduino_self_test "$@"
+    else
+	arduino "$@"
+    fi
+fi
+
