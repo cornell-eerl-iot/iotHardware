@@ -62,8 +62,8 @@ void loop() {
   case 1: 
     telegram.u8id = 1; // device address
     telegram.u8fct = 3; // function code (this one is registers read)
-    telegram.u16RegAdd = 1200; // start address in device
-    telegram.u16CoilsNo = 16; // number of elements (coils or registers) to read
+    telegram.u16RegAdd = 1009; // start address in device
+    telegram.u16CoilsNo = 1; // number of elements (coils or registers) to read
     telegram.au16reg = au16data; // pointer to a memory array in the Arduino
 
     host.setLastError(ERR_SUCCESS);
@@ -81,7 +81,7 @@ void loop() {
       } else {
         Serial.print(millis());
         Serial.print(": Registers: ");
-        for (int i=0; i < 16; ++i)
+        for (int i=0; i < 1; ++i)
           {
           Serial.print(" ");
           Serial.print(au16data[i], DEC);
