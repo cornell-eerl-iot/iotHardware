@@ -2,8 +2,6 @@
  *  This is a modification of the simple_host example of the Modbus 
  *  for Arduino library from MCCI.
  *  
- *  Modified by Manhal Bouarada.
- *  
  *  The purpose of this implementation is to query an array of data
  *  from an external Wattnode Modbus meter via RS-485. 
  *  
@@ -55,7 +53,7 @@ void setup() {
   u32wait = millis() + 1000;
   u8state = 0; 
 }
-int numreg=7;
+int numreg=8;
 void loop() {
   switch( u8state ) {
   case 0: 
@@ -122,7 +120,7 @@ void loop() {
         for (int i=0; i < numreg; ++i)
           {
           Serial.print(" ");
-          Serial.print(au16data[i], 4);
+          Serial.print(au16data[i], DEC);
           }
       }
       Serial.println("");
