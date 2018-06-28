@@ -18,6 +18,7 @@
 
 // data array for modbus network sharing
 uint16_t au16data[16];
+uint32_t process32data[16];
 uint8_t u8state;
 
 /**
@@ -53,17 +54,24 @@ void setup() {
   u32wait = millis() + 1000;
   u8state = 0; 
 }
+
 int numreg=8;
+bool swap=true;
+uint32_t low;
+uint32_t high;
+
 void loop() {
   switch( u8state ) {
   case 0: 
-    if (long(millis() - u32wait) > 0) u8state++; // wait state
+    if (long(millis() - u32wait) > 0) {
+      swap ? u8state++ : u8state = 3; // wait state
+    }
     break;
    //polling first set of registers
   case 1: 
     telegram.u8id = 1; // device address
     telegram.u8fct = 3; // function code (this one is registers read)
-    telegram.u16RegAdd = 1009; // start address in device
+    telegram.u16RegAdd = 1008; // start address in device
     telegram.u16CoilsNo = numreg; // number of elements (coils or registers) to read
     telegram.au16reg = au16data; // pointer to a memory array in the Arduino
 
@@ -74,58 +82,85 @@ void loop() {
   case 2:
     host.poll(); // check incoming messages
     if (host.getState() == COM_IDLE) {
-      u8state = 0;
+     
+      u8state=0;
       ERR_LIST lastError = host.getLastError();
       if (host.getLastError() != ERR_SUCCESS) {
-  Serial.print("Error ");
-  Serial.print(int(lastError));
+		  Serial.print("Error ");
+		  Serial.print(int(lastError));
       } else {
         Serial.print(millis());
         Serial.print(": Registers: ");
-        for (int i=0; i < numreg; ++i)
-          {
-          Serial.print(" ");
-          Serial.print(au16data[i], 4);
-          }
+         
+          for (int i=0; i < numreg; ++i)
+           {
+             // Serial.print(" ");
+             // Serial.print(au16data[i], BIN);
+              if(i%2 == 0){
+                low = au16data[i];
+              }else{
+                high = au16data[i];
+                high = (high<<16);
+                process32data[(i-1)/2] = low|high; 
+              }
+            
+            }
+            for (int i = 0;i<numreg/2;i++){
+              Serial.print(" ");
+              Serial.print(process32data[i],DEC);
+            }
       }
-      Serial.println("");
-
-      u32wait = millis() + 100;
+      //Serial.println("");
+		  swap = !swap;
+      u32wait = millis() + 1000;
     }
     break;
     
     //polling second set of registers
     case 3: 
-    telegram.u8id = 1; // device address
-    telegram.u8fct = 3; // function code (this one is registers read)
-    telegram.u16RegAdd = 1147; // start address in device
-    telegram.u16CoilsNo = numreg; // number of elements (coils or registers) to read
-    telegram.au16reg = au16data; // pointer to a memory array in the Arduino
+		telegram.u8id = 1; // device address
+		telegram.u8fct = 3; // function code (this one is registers read)
+		telegram.u16RegAdd = 1146; // start address in device
+		telegram.u16CoilsNo = numreg; // number of elements (coils or registers) to read
+		telegram.au16reg = au16data; // pointer to a memory array in the Arduino
 
-    host.setLastError(ERR_SUCCESS);
-    host.query( telegram ); // send query (only once)
-    u8state++;
-    break;
+		host.setLastError(ERR_SUCCESS);
+		host.query( telegram ); // send query (only once)
+		u8state++;
+		break;
   case 4:
     host.poll(); // check incoming messages
     if (host.getState() == COM_IDLE) {
       u8state = 0;
       ERR_LIST lastError = host.getLastError();
       if (host.getLastError() != ERR_SUCCESS) {
-  Serial.print("Error ");
-  Serial.print(int(lastError));
+		  Serial.print("Error ");
+		  Serial.print(int(lastError));
       } else {
+        Serial.print(" --- ");
         Serial.print(millis());
         Serial.print(": Registers: ");
         for (int i=0; i < numreg; ++i)
-          {
-          Serial.print(" ");
-          Serial.print(au16data[i], DEC);
-          }
+           {
+             // Serial.print(" ");
+             // Serial.print(au16data[i], BIN);
+              if(i%2 == 0){
+                low = au16data[i];
+              }else{
+                high = au16data[i];
+                high = (high<<16);
+                process32data[(i-1)/2] = low|high; 
+              }
+            
+            }
+            for (int i = 0;i<numreg/2;i++){
+              Serial.print(" ");
+              Serial.print(process32data[i],DEC);
+            }
       }
-      Serial.println("");
-
-      u32wait = millis() + 100;
+		  Serial.println("");
+		  swap = !swap;
+      u32wait = millis() + 1000;
     }
     break;
   }

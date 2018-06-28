@@ -29,6 +29,7 @@ Maplewood_device::Maplewood_device(uint8_t u8id, uint8_t u8txenpin){
 
 Maplewood_device::poll(){
 	Modbus::poll();
+	
 }
 
 
