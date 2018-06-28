@@ -1,17 +1,19 @@
 /**
- *  Modbus host example 1:
- *  The purpose of this example is to query an array of data
- *  from an external Modbus device. 
- *  The link media can be USB or RS232.
- *
- *  Recommended Modbus device: 
- *  diagslave http://www.modbusdriver.com/diagslave.html
- *
- *  In a Linux box, run 
- *  "./diagslave /dev/ttyUSB0 -b 19200 -d 8 -s 1 -p none -m rtu -a 1"
- *   This is:
- *    serial port /dev/ttyUSB0 at 19200 baud 8N1
- *    RTU mode and address @1
+ *  This is a modification of the simple_host example of the Modbus 
+ *  for Arduino library from MCCI.
+ *  
+ *  Modified by Manhal Bouarada.
+ *  
+ *  The purpose of this implementation is to query an array of data
+ *  from an external Wattnode Modbus meter via RS-485. 
+ *  
+ *  The registers to query are:  
+ *  Real Power: 
+ *      Sum: 1009-10
+ *      A,B,C: 1011-2, 1013-4, 1015-6
+ *  Reactive Power:
+ *      Sum: 1147-8
+ *      A,B,C: 1149-50, 1151-2, 1153-4
  */
 
 #include <ModbusRtu.h>
@@ -53,17 +55,18 @@ void setup() {
   u32wait = millis() + 1000;
   u8state = 0; 
 }
-
-void loop() {	
+int numreg=7;
+void loop() {
   switch( u8state ) {
   case 0: 
     if (long(millis() - u32wait) > 0) u8state++; // wait state
     break;
+   //polling first set of registers
   case 1: 
     telegram.u8id = 1; // device address
     telegram.u8fct = 3; // function code (this one is registers read)
     telegram.u16RegAdd = 1009; // start address in device
-    telegram.u16CoilsNo = 1; // number of elements (coils or registers) to read
+    telegram.u16CoilsNo = numreg; // number of elements (coils or registers) to read
     telegram.au16reg = au16data; // pointer to a memory array in the Arduino
 
     host.setLastError(ERR_SUCCESS);
@@ -76,16 +79,51 @@ void loop() {
       u8state = 0;
       ERR_LIST lastError = host.getLastError();
       if (host.getLastError() != ERR_SUCCESS) {
-        Serial.print("Error ");
-        Serial.print(int(lastError));
+  Serial.print("Error ");
+  Serial.print(int(lastError));
       } else {
-          Serial.print(millis());
-          Serial.print(": Registers: ");
-          for (int i=0; i < 1; ++i)
-            {
-            Serial.print(" ");
-            Serial.print(au16data[i], DEC);
-            }
+        Serial.print(millis());
+        Serial.print(": Registers: ");
+        for (int i=0; i < numreg; ++i)
+          {
+          Serial.print(" ");
+          Serial.print(au16data[i], 4);
+          }
+      }
+      Serial.println("");
+
+      u32wait = millis() + 100;
+    }
+    break;
+    
+    //polling second set of registers
+    case 3: 
+    telegram.u8id = 1; // device address
+    telegram.u8fct = 3; // function code (this one is registers read)
+    telegram.u16RegAdd = 1147; // start address in device
+    telegram.u16CoilsNo = numreg; // number of elements (coils or registers) to read
+    telegram.au16reg = au16data; // pointer to a memory array in the Arduino
+
+    host.setLastError(ERR_SUCCESS);
+    host.query( telegram ); // send query (only once)
+    u8state++;
+    break;
+  case 4:
+    host.poll(); // check incoming messages
+    if (host.getState() == COM_IDLE) {
+      u8state = 0;
+      ERR_LIST lastError = host.getLastError();
+      if (host.getLastError() != ERR_SUCCESS) {
+  Serial.print("Error ");
+  Serial.print(int(lastError));
+      } else {
+        Serial.print(millis());
+        Serial.print(": Registers: ");
+        for (int i=0; i < numreg; ++i)
+          {
+          Serial.print(" ");
+          Serial.print(au16data[i], 4);
+          }
       }
       Serial.println("");
 
