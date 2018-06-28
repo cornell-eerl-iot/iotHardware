@@ -54,7 +54,7 @@ void setup() {
   u8state = 0; 
 }
 
-void loop() {
+void loop() {	
   switch( u8state ) {
   case 0: 
     if (long(millis() - u32wait) > 0) u8state++; // wait state
@@ -76,16 +76,16 @@ void loop() {
       u8state = 0;
       ERR_LIST lastError = host.getLastError();
       if (host.getLastError() != ERR_SUCCESS) {
-  Serial.print("Error ");
-  Serial.print(int(lastError));
+        Serial.print("Error ");
+        Serial.print(int(lastError));
       } else {
-        Serial.print(millis());
-        Serial.print(": Registers: ");
-        for (int i=0; i < 1; ++i)
-          {
-          Serial.print(" ");
-          Serial.print(au16data[i], DEC);
-          }
+          Serial.print(millis());
+          Serial.print(": Registers: ");
+          for (int i=0; i < 1; ++i)
+            {
+            Serial.print(" ");
+            Serial.print(au16data[i], DEC);
+            }
       }
       Serial.println("");
 
