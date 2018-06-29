@@ -115,7 +115,7 @@ void loop() {
       //Serial.println("");
 		  swap = !swap;
       
-      u32wait = millis() + 400;
+      u32wait = millis() + 100;
     }
     break;
     
@@ -165,7 +165,7 @@ void loop() {
 		  Serial.println("");
 		  swap = !swap;
       
-      u32wait = millis() + 400;
+      u32wait = millis() + 800;
     }
     break;
   }

@@ -5,7 +5,6 @@
 class Maplewood_device : Modbus 
 {
 	
-	
 	public:
     Maplewood_device();
     Maplewood_device(uint8_t u8id);
