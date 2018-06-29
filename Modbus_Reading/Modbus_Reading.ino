@@ -19,6 +19,7 @@
 // data array for modbus network sharing
 uint16_t au16data[16];
 uint32_t process32data[16];
+float convertedData[16];
 uint8_t u8state;
 
 /**
@@ -105,14 +106,16 @@ void loop() {
               }
             
             }
+            memcpy(&convertedData,&process32data, sizeof(process32data));
             for (int i = 0;i<numreg/2;i++){
               Serial.print(" ");
-              Serial.print(process32data[i],DEC);
+              Serial.print(convertedData[i],DEC);
             }
       }
       //Serial.println("");
 		  swap = !swap;
-      u32wait = millis() + 1000;
+      
+      u32wait = millis() + 400;
     }
     break;
     
@@ -153,14 +156,16 @@ void loop() {
               }
             
             }
+            memcpy(&convertedData,&process32data, sizeof(process32data));
             for (int i = 0;i<numreg/2;i++){
               Serial.print(" ");
-              Serial.print(process32data[i],DEC);
+              Serial.print(convertedData[i],DEC);
             }
       }
 		  Serial.println("");
 		  swap = !swap;
-      u32wait = millis() + 1000;
+      
+      u32wait = millis() + 400;
     }
     break;
   }
