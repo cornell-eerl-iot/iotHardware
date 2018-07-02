@@ -1,0 +1,31 @@
+#!/bin/bash
+
+version() {
+    if [ "$VERSION" != "" ]
+    then
+        echo $VERSION
+        return
+    fi
+
+    while [ $# -gt 0 ]
+    do
+        case "$1"
+        in
+            --version=*) VERSION="${1#--version=}"; shift;;
+            --*=*)       shift;;
+            --)          shift; break;;
+            *)           break;;
+        esac
+    done
+
+    if [ "$VERSION" = "" ]
+    then
+        VERSION="1.8.5"
+    fi
+    echo $VERSION
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
+then
+    version "$@"
+fi

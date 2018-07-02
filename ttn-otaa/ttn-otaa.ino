@@ -44,7 +44,7 @@
 // first. When copying an EUI from ttnctl output, this means to reverse
 // the bytes. For TTN issued EUIs the last bytes should be 0xD5, 0xB3,
 // 0x70.
-static const u1_t PROGMEM APPEUI[8]=  { 0x20, 0xFB, 0x00, 0xD0, 0x7E, 0xD5, 0xB3, 0x70 };
+static const u1_t PROGMEM APPEUI[8]= { 0x20, 0xFB, 0x00, 0xD0, 0x7E, 0xD5, 0xB3, 0x70 };
 void os_getArtEui (u1_t* buf) { memcpy_P(buf, APPEUI, 8);}
 
 // This should also be in little endian format, see above.
@@ -57,12 +57,12 @@ void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
 static const u1_t PROGMEM APPKEY[16] = { 0x21, 0xC8, 0x39, 0x66, 0x22, 0xEE, 0xF3, 0xDA, 0xAE, 0x2A, 0x92, 0x89, 0x82, 0x51, 0xD8, 0x29 };
 void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 
-static uint8_t mydata[] ={0x00,0x00,0x00};
+static uint8_t mydata[] = "Hello, world!";
 static osjob_t sendjob;
 
 // Schedule TX every this many seconds (might become longer due to duty
 // cycle limitations).
-const unsigned TX_INTERVAL = 30;
+const unsigned TX_INTERVAL = 0;
 
 // Pin mapping
 const lmic_pinmap lmic_pins = {
@@ -181,7 +181,7 @@ void do_send(osjob_t* j){
 
 void setup() {
     delay(5000);
-    //while (! Serial)
+    while (! Serial)
         ;
     Serial.begin(9600);
     Serial.println(F("Starting"));
