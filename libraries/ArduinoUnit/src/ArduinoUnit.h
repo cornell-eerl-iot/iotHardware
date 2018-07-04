@@ -535,9 +535,6 @@ void loop() {
 #endif
     return ok;
   }
-
- /** abort all testing - all unresolved tests are resolved as failed */
- public: static void abort();
 };
 
 /** Class for creating a once-only test.  Test::run() on such a test
@@ -830,19 +827,3 @@ is in another file (or defined after the assertion on it). */
   assertRelativelyNearMsg(a,b,max,ARDUINO_UNIT_STRING(""),)
 
 #define assertRelativelyNear(...) ArduinoUnitMacroChoose5(assertRelativelyNear_, ## __VA_ARGS__)(__VA_ARGS__)
-
-#if defined(ARDUINO)
-#define ARDUINO_UNIT_TESTS                                    \
-  void setup() { Serial.begin(115200L); while (!Serial) {}; } \
-  void loop() { Test::run(); }
-#else
-#define ARDUINO_UNIT_TESTS                                              \
-  int main(int argc, const char *argv[]) {                              \
-    for (int i=1; i<argc; ++i) {                                        \
-      if (strcmp(argv[i],"-i")==0 || strcmp(argv[i],"--include")==0) { Test::include(argv[++i]); } \
-      if (strcmp(argv[i],"-e")==0 || strcmp(argv[i],"--exclude")==0) { Test::exclude(argv[++i]); } \
-    }                                                                   \
-    do { Test::run(); } while (Test::remaining() > 0);                  \
-    return Test::getCurrentFailed() == 0 ? 0 : 1;                       \
-  }
-#endif

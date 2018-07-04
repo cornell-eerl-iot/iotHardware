@@ -1,7 +1,7 @@
 UNAME := $(shell uname)
 
 ifeq ($(UNAME), Linux)
-  ARDUINO_DIR=$(HOME)/Arduino
+  ARDUINO_DIR=/usr/share/arduino
 endif
 ifeq ($(UNAME), Darwin)
   ARDUINO_DIR=$(HOME)/Documents/Arduino

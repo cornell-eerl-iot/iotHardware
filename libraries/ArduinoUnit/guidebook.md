@@ -106,19 +106,19 @@ In a test block `{ ... }` you can put code.  Any code really, but some particula
 
 * `pass()` or `fail()` mark this test as passed or failed.  The current test will continue to the end (which may change it's mind), but it will be resolved. This means a `testing()` environment will not loop again.
 
-#### Assertions
+#### `assertRelation(between [,foot << note [,retva]])`
 
-* `assert[Relation](a,b[,foot<<note[,retval]])` or `assertTest[Status](thingFor[,foot<<note[,retval]])`
+* `assertRelation(a,b)` or `assertTestStatus(testName)`
 
-  * `[Relation]` is one of: `Equal`, `NotEqual`, `Less`, `More`, `LessOrEqual`, `MoreOrEqual`.
-  * `[Status]` is one of: `Done`, `Pass`, `Skip`, `Fail`, `NotDone`, `NotPass`, `NotSkip`, `NotFail`.
-  * `thingFor` is some test/testing name.
-  * The `<<` in the optional `foot<<note` separates things you can print.
-  * The optional `retval` is to control the return value (normally nothing) when an assertion fails.
+  * `Relation` is one of: `Equal`, `NotEqual`, `Less`, `More`, `LessOrEqual`, `MoreOrEqual`.
+  * `Status` is one of: `Done`, `Pass`, `Skip`, `Fail`, `NotDone`, `NotPass`, `NotSkip`, `NotFail`.
+  * `testName` is some test/testing name.
+  * The `<<` in the optional `foot << note` separates things you can print.
+  * The optional retval is what is returned if the assertion fails (usually just nothing).
 
 * For float and double values, `assertNear(a,b,max [,foot << note])` tests `|b-a|<=max`.  If you are working with very large or very small numbers, use `assertRelativelyNear`, which divides the error by the average magnitude, `½(|a|+|b|)`.  Floating point arithmetic is almost never exact so don't expect them to be `Equal`.
 
-* `checkTest[Status](thingFor)` Just true/false depending on the current status of `test/ing(thingFor)`.
+* `checkTestStatus(testName)` Just true/false depending on the current status of `testName`.
 
 The asserts are replaced with code like:
 
@@ -157,7 +157,7 @@ Tests that are completed are removed from the list (this is not a dynamic memory
 
 Pejoratives aside, this idea is really useful and we are all idiots most of the time (there are infinitely more things we don't know than we know).  It is important to have a thumbs up/thumbs down status so we can at least decide to look more closely.  If you or your manager puckers when they see your code, replace `idiot` with `status`.  We know what you mean: "Toilet" vs. "Bathroom", it's all the same business.
 
-So let us imagine we are building a controller for a food cart.  I'm not going to bother with the implementation, just the tests.  By default if a test completes it is a `pass()`.  You can put a fail or some simple assertions to see how the output changes.
+So lets imagine we are building a controller for a food cart.  I'm not going to bother with the implementation, just the tests.  By default if a test completes it is a `pass()`.  You can put a fail or some simple assertions to see how the output changes.
 ```c++
 #include <ArduinoUnit.h>
 
@@ -228,7 +228,7 @@ void setup() {
 }
 
 void loop() {
-  idiotLightLoop();
+  idiotLoop();
   
   // ...
   
@@ -451,7 +451,7 @@ void spaceCritical() {
 }
 ```
 
-Note that there is no guarantee the space can be allocated in one block.  The free space list may be fragmented, so you should check the outcome of any dynamic allocation to attempt.  Running out of memory is usually a critical failure, so add to your sanity checks:
+Note that there is no gaurantee the space can be allocated in one block.  The free space list may be fragmented, so you should check the outcome of any dynamic allocation to attempt.  Running out of memory is usually a critical failure, so add to your sanity checks:
 
 ```c++
 bool criticalError = false;
@@ -572,7 +572,7 @@ Eventually you will be turning your hot dog cart into a taco stand.  Trust me ev
 
 ### A Journey of 1000 Miles Begins With A Map
 
-Planning every detail ahead of time is a waste of effort. So is just charging into the woods. In software, you build the map with tests. If you don't know how to make a thing work, try writing the tests that should pass when it does work. The tests will help solidify what the Thing really is, including a lot about what it does not have to be.
+Planning every detail ahead of time is a waste of effort. So is just charging into the woods. In software you build the map with tests. If you don't know how to make a thing work, try writing the tests that should pass when it does work. The tests will help solidify what the Thing really is, including a lot about what it does not have to be.
 
 ### Your Momma Writes Better Tests Than You
 
