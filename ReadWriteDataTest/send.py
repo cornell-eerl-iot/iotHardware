@@ -17,7 +17,7 @@ time.sleep(5)
 line= ''
 while True:
 	ser.write(message)
-	lineNew=ser.readLine()
+	lineNew=ser.readline()
 	if(line!=lineNew):
 		print(lineNew)
 

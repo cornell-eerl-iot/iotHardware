@@ -18,6 +18,7 @@
 #include <Catena.h>
 #include "Catena_ModbusRtu.h"
 
+
 using namespace McciCatena;
 
 Catena gCatena;
@@ -26,9 +27,11 @@ Catena gCatena;
 uint16_t au16data[16];
 uint32_t process32data[16];
 float convertedData[16];
-uint8_t u8state;
-uint16_t reg[] = {1008,1146}
-uint16_t numreg[]= {8,8};
+uint8_t u8state; 
+uint8_t u8query;
+uint16_t reg1 = 1012;
+uint16_t reg2= 1150;
+uint16_t numreg= 2;
 
 /**
  *  Modbus object declaration
@@ -51,7 +54,7 @@ static inline void powerOn(void)
 /**
  * This is a struct which contains a query to a device
  */
-modbus_t telegram;
+modbus_t telegram[2];
 
 unsigned long u32wait;
 
@@ -62,38 +65,47 @@ void setup() {
   host.setTimeOut( 2000 ); // if there is no answer in 2000 ms, roll over
   host.setTxEnableDelay(100);
   gCatena.registerObject(&host);
-  
+  //numreg = end_reg-start_reg;
   u32wait = millis() + 1000;
-  u8state = 0; 
+  u8state = u8query = 0; 
+  
+  telegram[0].u8id = 1; // device address
+  telegram[0].u8fct = 3; // function code (this one is registers read)
+  telegram[0].u16RegAdd = reg1; // start address in device
+  telegram[0].u16CoilsNo = numreg; // number of elements (coils or registers) to read
+  telegram[0].au16reg = au16data; // pointer to a memory array in the Arduino
+
+  telegram[1].u8id = 1; // device address
+  telegram[1].u8fct = 3; // function code (this one is registers read)
+  telegram[1].u16RegAdd = reg2; // start address in device
+  telegram[1].u16CoilsNo = numreg; // number of elements (coils or registers) to read
+  telegram[1].au16reg = au16data; // pointer to a memory array in the Arduino
 }
 
-
-
 void loop() {
-    
   uint32_t low;
   uint32_t high;
-  uint8_t state;
   switch( u8state ) {
   case 0: 
     if (long(millis() - u32wait) > 0) u8state++; // wait state
     break;
    //polling first set of registers
   case 1: 
-    telegram.u8id = 1; // device address
-    telegram.u8fct = 3; // function code (this one is registers read)
-    telegram.u16RegAdd = 1008; // start address in device
-    telegram.u16CoilsNo = numreg; // number of elements (coils or registers) to read
-    telegram.au16reg = au16data; // pointer to a memory array in the Arduino
-
     host.setLastError(ERR_SUCCESS);
-    host.query( telegram ); // send query (only once)
+    host.query( telegram[u8query] ); // send query (only once)
+    if(u8query==0){
+      //Serial.println("");
+      //Serial.print(millis());
+      //Serial.print(": Registers:");   
+      }
     u8state++;
+    u8query++;
+    if (u8query > 1) u8query = 0;
     break;
   case 2:
     gCatena.poll(); // check incoming messages
     if (host.getState() == COM_IDLE) {
-     
+      
       u8state=0;
       ERR_LIST lastError = host.getLastError();
       
@@ -101,32 +113,29 @@ void loop() {
   		  Serial.print("Error ");
   		  Serial.print(int(lastError));
       } else {
-        Serial.print(millis());
-        Serial.print(": Registers: ");
-         
-          for (int i=0; i < numreg; ++i)
-           {
-             // Serial.print(" ");
-             // Serial.print(au16data[i], BIN);
-              if(i%2 == 0){
-                low = au16data[i];
-              }else{
-                high = au16data[i];
-                high = (high<<16);
-                process32data[(i-1)/2] = low|high; 
-              }
-            
-            }
-            memcpy(&convertedData,&process32data, sizeof(process32data));
-            for (int i = 0;i<numreg/2;i++){
-              Serial.print(" ");
-              Serial.print(convertedData[i],DEC);
-            }
+        
+        for (int i=0; i < numreg; ++i)
+        {
+        //Serial.print(" ");
+        //Serial.print(au16data[i], DEC);
+          if(i%2 == 0){
+              low = au16data[i];
+           }else{
+              high = au16data[i];
+              high = (high<<16);
+              process32data[(i-1)/2] = low|high; 
+           }
+        }
+        memcpy(&convertedData,&process32data, sizeof(process32data));
+        for (int i = 0;i<numreg/2;i++){
+          Serial.print(" ");
+          Serial.print(convertedData[i],DEC);
+        }
+        
+        u32wait = ((u8query-1)==0) ? (millis() + 1) : (millis()+1000);
       }
-      //Serial.println("");
-      u32wait = millis() + 100;
+      break;
     }
-    break;
   }
 }
 
