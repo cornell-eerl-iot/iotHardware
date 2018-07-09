@@ -1,10 +1,10 @@
-import csv
+import csv as csv
 import time
 import random
 import serial
 import datetime
 
-file= open('blinks.csv', 'a')
+file= open('testData.csv', 'a')
 
 ser = serial.Serial(
     port='COM9',
