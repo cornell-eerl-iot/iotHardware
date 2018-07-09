@@ -94,7 +94,7 @@ void loop() {
     host.setLastError(ERR_SUCCESS);
     host.query( telegram[u8query] ); // send query (only once)
     if(u8query==0){
-      //Serial.println("");
+      Serial.println("");
       //Serial.print(millis());
       //Serial.print(": Registers:");   
       }
@@ -128,10 +128,12 @@ void loop() {
         }
         memcpy(&convertedData,&process32data, sizeof(process32data));
         for (int i = 0;i<numreg/2;i++){
-          Serial.print(" ");
           Serial.print(convertedData[i],DEC);
+          if(i+1!=numreg/2)
+            Serial.print(",");
         }
-        
+        if(u8query-1==0)
+         Serial.print(",");
         u32wait = ((u8query-1)==0) ? (millis() + 1) : (millis()+1000);
       }
       break;
