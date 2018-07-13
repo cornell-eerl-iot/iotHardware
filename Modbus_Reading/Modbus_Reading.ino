@@ -29,9 +29,9 @@ uint32_t process32data[16];
 float convertedData[16];
 uint8_t u8state; 
 uint8_t u8query;
-uint16_t reg1 = 1012;
-uint16_t reg2= 1150;
-uint16_t numreg= 2;
+uint16_t reg1 = 1008;
+uint16_t reg2 = 1146;
+uint16_t numreg= 8;
 
 /**
  *  Modbus object declaration
