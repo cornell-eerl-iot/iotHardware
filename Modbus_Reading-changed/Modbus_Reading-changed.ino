@@ -18,7 +18,6 @@
 #include <Catena.h>
 #include "Catena_ModbusRtu.h"
 
-
 using namespace McciCatena;
 
 Catena gCatena;

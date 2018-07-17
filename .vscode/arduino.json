@@ -1,0 +1,7 @@
+{
+    "board": "mcci:samd:mcci_catena_4470",
+    "configuration": "lorawan_region=us915",
+    "sketch": "Modbus_Reading\\Modbus_Reading.ino",
+    "output": "build"
+
+}
