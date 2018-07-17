@@ -1,3 +1,6 @@
+#include <Arduino.h>
+#line 1 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\EmonLib\\examples\\current_only\\current_only.ino"
+#line 1 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\EmonLib\\examples\\current_only\\current_only.ino"
 // EmonLibrary examples openenergymonitor.org, Licence GNU GPL V3
 
 #include "EmonLib.h"                   // Include Emon Library
@@ -5,6 +8,11 @@ EnergyMonitor emon1;                   // Create an instance
 
 
 
+#line 8 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\EmonLib\\examples\\current_only\\current_only.ino"
+void setup();
+#line 16 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\EmonLib\\examples\\current_only\\current_only.ino"
+void loop();
+#line 8 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\EmonLib\\examples\\current_only\\current_only.ino"
 void setup()
 {  
   Serial.begin(115200);
@@ -26,3 +34,4 @@ void loop()
   //emon1.serialprint();
 
 }
+

@@ -1,0 +1,10 @@
+{
+  "builtInLibrariesFolders": "C:\\Program Files (x86)\\Arduino\\libraries",
+  "customBuildProperties": "build.warn_data_percentage=75,runtime.tools.arduinoOTA.path=C:\\Program Files (x86)\\Arduino\\hardware\\tools\\avr,runtime.tools.avr-gcc.path=C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\avr-gcc\\4.9.2-atmel3.5.3-arduino2,runtime.tools.avrdude.path=C:\\Program Files (x86)\\Arduino\\hardware\\tools\\avr",
+  "fqbn": "arduino:avr:uno",
+  "hardwareFolders": "C:\\Program Files (x86)\\Arduino\\hardware,C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages",
+  "otherLibrariesFolders": "C:\\Users\\xiaoy\\Documents\\Arduino\\libraries",
+  "runtime.ide.version": "10801",
+  "sketchLocation": "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\EmonLib\\examples\\current_only\\current_only.ino",
+  "toolsFolders": "C:\\Program Files (x86)\\Arduino\\tools-builder,C:\\Program Files (x86)\\Arduino\\hardware\\tools\\avr,C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages"
+}

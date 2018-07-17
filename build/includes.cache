@@ -1,0 +1,27 @@
+[
+  {
+    "Sourcefile": "",
+    "Include": "",
+    "Includepath": "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino"
+  },
+  {
+    "Sourcefile": "",
+    "Include": "",
+    "Includepath": "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\variants\\standard"
+  },
+  {
+    "Sourcefile": "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\build\\sketch\\current_only.ino.cpp",
+    "Include": "EmonLib.h",
+    "Includepath": "C:\\Users\\xiaoy\\Documents\\Arduino\\libraries\\EmonLib"
+  },
+  {
+    "Sourcefile": "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\build\\sketch\\current_only.ino.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\xiaoy\\Documents\\Arduino\\libraries\\EmonLib\\EmonLib.cpp",
+    "Include": "",
+    "Includepath": ""
+  }
+]
