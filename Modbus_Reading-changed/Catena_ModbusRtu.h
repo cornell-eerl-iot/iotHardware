@@ -2,7 +2,6 @@
 
 #include <Catena_PollableInterface.h> //in Catena_for_arduino library
 #include <ModbusRtu.h>
-#include <stdlib.h>
 
 
 namespace McciCatena {
@@ -26,10 +25,10 @@ public:
   	virtual void query(modbus_t telegram){this->Super::query(telegram);}
 	void get_data(int telegram_num);
 	void telegram_init(int size);
-	void print_telegrams();
+	void printTelegrams();
 	
-	void add_telegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil, uint16_t *reg);
-	void add_telegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil);
+	void addTelegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil, uint16_t *reg);
+	void addTelegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil);
 	
 	uint16_t *get_container(){return container;} //get the result from poll.
 
@@ -47,7 +46,12 @@ void cCatenaModbusRtu::poll_multiple_regs()
 {
 
 }
-
+/**
+ * @brief
+ * This method sends queries to the device from 1st element to the last element in telegram
+ *	
+ * @return none
+ */
 void cCatenaModbusRtu::query(){
 	if(queryCount>telegramsCounter){
 		queryCount=0;
@@ -61,9 +65,13 @@ void cCatenaModbusRtu::telegram_init(int size){
 	telegrams = new modbus_t[size];
 	telegramsSize = size;
 }
-
-//Prints all the telegram values to the serial monitor
-void cCatenaModbusRtu::print_telegrams(){
+/**
+ * @brief
+ * Prints all the telegram values to the serial monitor
+ *	
+ * @return none
+ */
+void cCatenaModbusRtu::printTelegrams(){
 	for(int i = 0; i<telegramsSize; i++){
 		Serial.print("ID: ");Serial.print(telegrams[i].u8id); // device address
 		Serial.print(" Func Code: ");Serial.print(telegrams[i].u8fct); // function code (this one is registers read)
@@ -74,13 +82,14 @@ void cCatenaModbusRtu::print_telegrams(){
 }
 
 /**
- * @add_telegram
  * @brief
  * Adds new telegram to the telegrams array
  * If adding new telegram will exceed array size, then we reallocate telegrams and double the size of array
- *
+ *	
+ * @param
+ *	parameter from the modbus_t struct
  */
-void cCatenaModbusRtu::add_telegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil, uint16_t *reg){
+void cCatenaModbusRtu::addTelegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil, uint16_t *reg){
 	if(telegramsCounter>=telegramsSize){
 		modbus_t *clone = telegrams;
 		telegrams = new modbus_t[telegramsSize*2];
@@ -97,9 +106,17 @@ void cCatenaModbusRtu::add_telegram(uint8_t id, uint8_t funct, uint16_t addr, ui
 	telegrams[telegramsCounter].au16reg = reg; // pointer to a memory array in the Arduino
 	telegramsCounter++;
 }
-
-void cCatenaModbusRtu::add_telegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil){
-	this->add_telegram(id,funct,addr,coil,container);
+/**
+ * @brief
+ * Adds new telegram to the telegrams array; no output needed for the variation
+ * 
+ * @param
+ *	parameter from the modbus_t struct
+ *	
+ * @return none
+ */
+void cCatenaModbusRtu::addTelegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil){
+	this->addTelegram(id,funct,addr,coil,container);
 }
 
 

@@ -18,6 +18,9 @@
 #include <Catena.h>
 #include "Catena_ModbusRtu.h"
 
+
+#define kPowerOn        A3
+
 using namespace McciCatena;
 
 Catena gCatena;
@@ -39,10 +42,9 @@ uint16_t numreg= 8;
  *  u8txenpin : 0 for RS-232 and USB-FTDI 
  *               or any pin number > 1 for RS-485
  */
+
 //cCatenaModbusRtu host(0, A4); // this is host and RS-232 or USB-FTDI
 ModbusSerial<decltype(Serial1)> mySerial(&Serial1);
-
-#define kPowerOn        A3
 
 static inline void powerOn(void)
 {
