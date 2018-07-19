@@ -5,6 +5,6 @@
   "hardwareFolders": "C:\\Program Files (x86)\\Arduino\\hardware,C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages",
   "otherLibrariesFolders": "C:\\Users\\xiaoy\\Documents\\Arduino\\libraries",
   "runtime.ide.version": "10801",
-  "sketchLocation": "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\EmonLib\\examples\\current_only\\current_only.ino",
+  "sketchLocation": "C:\\Users\\xiaoy\\Documents\\Arduino\\rapid_targeting_system\\rapid_targeting_system.ino",
   "toolsFolders": "C:\\Program Files (x86)\\Arduino\\tools-builder,C:\\Program Files (x86)\\Arduino\\hardware\\tools\\avr,C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages"
 }
