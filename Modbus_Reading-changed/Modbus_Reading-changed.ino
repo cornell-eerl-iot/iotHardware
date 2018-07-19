@@ -43,7 +43,7 @@ uint16_t numreg= 8;
  *               or any pin number > 1 for RS-485
  */
 
-//cCatenaModbusRtu host(0, A4); // this is host and RS-232 or USB-FTDI
+cCatenaModbusRtu host(0, A4); // this is host and RS-232 or USB-FTDI
 ModbusSerial<decltype(Serial1)> mySerial(&Serial1);
 
 static inline void powerOn(void)
