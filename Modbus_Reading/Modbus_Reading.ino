@@ -83,8 +83,6 @@ void setup() {
 }
 
 void loop() {
-  uint32_t low;
-  uint32_t high;
   switch( u8state ) {
   case 0: 
     if (long(millis() - u32wait) > 0) u8state++; // wait state
@@ -114,26 +112,8 @@ void loop() {
   		  Serial.print(int(lastError));
       } else {
         
-        for (int i=0; i < numreg; ++i)
-        {
-        //Serial.print(" ");
-        //Serial.print(au16data[i], DEC);
-          if(i%2 == 0){
-              low = au16data[i];
-           }else{
-              high = au16data[i];
-              high = (high<<16);
-              process32data[(i-1)/2] = low|high; 
-           }
-        }
-        memcpy(&convertedData,&process32data, sizeof(process32data));
-        for (int i = 0;i<numreg/2;i++){
-          Serial.print(convertedData[i],DEC);
-          if(i+1!=numreg/2)
-            Serial.print(",");
-        }
-        if(u8query-1==0)
-         Serial.print(",");
+        
+        
         u32wait = ((u8query-1)==0) ? (millis() + 1) : (millis()+1000);
       }
       break;
@@ -141,3 +121,44 @@ void loop() {
   }
 }
 
+/**
+ * @brief
+ * Converts 16-bit unsigned integer registers to 32 bit floats
+ * This funcion will combine two register values together with first value the low bytes and 
+ * second values the high bytes. Coil number of telegram should be even.
+ * 
+ * @param modbus_t telegram
+ *  
+ * @return pointer to a float array that contains the converted values
+ */
+float * 16b_to_float(modbus_t telegram){
+  float convertedData[telegram.u16CoilsNo/2];
+  uint32_t processedData[telegram.u16CoilsNo/2];
+  uint16_t low;
+  uint32_t high;
+  uint16_t au16data = telegram.au16reg;
+  
+  for (int i=0; i < telegram.u16CoilsNo; ++i)
+  {
+    //Serial.print(" ");
+    //Serial.print(au16data[i], DEC);
+      if(i%2 == 0){
+        low = au16data[i];
+      }else{
+        high = au16data[i];
+        high = (high<<16);
+        process32data[(i-1)/2] = low|high; 
+      }
+  }
+  memcpy(&convertedData,&process32data, sizeof(process32data));
+  return convertedData;
+}
+
+void print_regs(float *convertedData, int data_size){
+  for (int i = 0;i<data_size/2;i++){
+    Serial.print(convertedData[i],DEC);
+    if(i+1!=numreg/2)
+      Serial.print(",");
+  }
+
+}
