@@ -11,9 +11,9 @@ class cCatenaModbusRtu : public Modbus,
 	{
 	using Super = Modbus;
 public:
-		cCatenaModbusRtu() {telegram_init(1);};
-    	cCatenaModbusRtu(uint8_t u8id) : Super(u8id) {};
-    	cCatenaModbusRtu(uint8_t u8id, uint8_t u8txenpin) : Super(u8id, u8txenpin) {};
+		cCatenaModbusRtu() {this->telegram_init(1);};
+    	cCatenaModbusRtu(uint8_t u8id) : Super(u8id) {this->cCatenaModbusRtu();};
+    	cCatenaModbusRtu(uint8_t u8id, uint8_t u8txenpin) : Super(u8id, u8txenpin) {this->cCatenaModbusRtu();};
 
 	// the polling interface 
 	// we save the poll() results for the background, or 

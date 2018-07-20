@@ -2,12 +2,12 @@
   {
     "Sourcefile": "",
     "Include": "",
-    "Includepath": "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\mcci\\hardware\\samd\\1.1.0\\cores\\arduino"
+    "Includepath": "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.2.0\\cores\\arduino"
   },
   {
     "Sourcefile": "",
     "Include": "",
-    "Includepath": "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\mcci\\hardware\\samd\\1.1.0\\variants\\feather_m0_express"
+    "Includepath": "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.2.0\\variants\\feather_m0"
   },
   {
     "Sourcefile": "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\build\\sketch\\Modbus_Reading.ino.cpp",
@@ -23,16 +23,6 @@
     "Sourcefile": "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\build\\sketch\\Modbus_Reading.ino.cpp",
     "Include": "Arduino_LoRaWAN_ttn.h",
     "Includepath": "C:\\Users\\xiaoy\\Documents\\Arduino\\libraries\\arduino-lorawan\\src"
-  },
-  {
-    "Sourcefile": "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\build\\sketch\\Modbus_Reading.ino.cpp",
-    "Include": "Adafruit_FRAM_I2C.h",
-    "Includepath": "C:\\Users\\xiaoy\\Documents\\Arduino\\libraries\\Adafruit_FRAM_I2C"
-  },
-  {
-    "Sourcefile": "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\build\\sketch\\Modbus_Reading.ino.cpp",
-    "Include": "Wire.h",
-    "Includepath": "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\mcci\\hardware\\samd\\1.1.0\\libraries\\Wire"
   },
   {
     "Sourcefile": "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\build\\sketch\\Modbus_Reading.ino.cpp",
@@ -62,7 +52,7 @@
   {
     "Sourcefile": "C:\\Users\\xiaoy\\Documents\\Arduino\\libraries\\Catena-Arduino-Platform\\src\\lib\\Catena_Flash_at25sf081.cpp",
     "Include": "SPI.h",
-    "Includepath": "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\mcci\\hardware\\samd\\1.1.0\\libraries\\SPI"
+    "Includepath": "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.2.0\\libraries\\SPI"
   },
   {
     "Sourcefile": "C:\\Users\\xiaoy\\Documents\\Arduino\\libraries\\Catena-Arduino-Platform\\src\\lib\\Catena_Flash_at25sf081.cpp",
@@ -73,6 +63,16 @@
     "Sourcefile": "C:\\Users\\xiaoy\\Documents\\Arduino\\libraries\\Catena-Arduino-Platform\\src\\lib\\Catena_Fram.cpp",
     "Include": "",
     "Includepath": ""
+  },
+  {
+    "Sourcefile": "C:\\Users\\xiaoy\\Documents\\Arduino\\libraries\\Catena-Arduino-Platform\\src\\lib\\Catena_Fram2k.cpp",
+    "Include": "Adafruit_FRAM_I2C.h",
+    "Includepath": "C:\\Users\\xiaoy\\Documents\\Arduino\\libraries\\Adafruit_FRAM_I2C"
+  },
+  {
+    "Sourcefile": "C:\\Users\\xiaoy\\Documents\\Arduino\\libraries\\Catena-Arduino-Platform\\src\\lib\\Catena_Fram2k.cpp",
+    "Include": "Wire.h",
+    "Includepath": "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.2.0\\libraries\\Wire"
   },
   {
     "Sourcefile": "C:\\Users\\xiaoy\\Documents\\Arduino\\libraries\\Catena-Arduino-Platform\\src\\lib\\Catena_Fram2k.cpp",
@@ -600,17 +600,17 @@
     "Includepath": ""
   },
   {
+    "Sourcefile": "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.2.0\\libraries\\SPI\\SPI.cpp",
+    "Include": "",
+    "Includepath": ""
+  },
+  {
     "Sourcefile": "C:\\Users\\xiaoy\\Documents\\Arduino\\libraries\\Adafruit_FRAM_I2C\\Adafruit_FRAM_I2C.cpp",
     "Include": "",
     "Includepath": ""
   },
   {
-    "Sourcefile": "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\mcci\\hardware\\samd\\1.1.0\\libraries\\Wire\\Wire.cpp",
-    "Include": "",
-    "Includepath": ""
-  },
-  {
-    "Sourcefile": "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\mcci\\hardware\\samd\\1.1.0\\libraries\\SPI\\SPI.cpp",
+    "Sourcefile": "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.2.0\\libraries\\Wire\\Wire.cpp",
     "Include": "",
     "Includepath": ""
   },

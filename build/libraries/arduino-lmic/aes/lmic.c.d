@@ -3,4 +3,5 @@ c:\Users\xiaoy\Documents\GitHub\iotHardware\build\libraries\arduino-lmic\aes\lmi
  C:\Users\xiaoy\Documents\Arduino\libraries\arduino-lmic\src\aes\../lmic/oslmic.h \
  C:\Users\xiaoy\Documents\Arduino\libraries\arduino-lmic\src\aes\../lmic/config.h \
  C:\Users\xiaoy\Documents\Arduino\libraries\arduino-lmic\src\aes\../lmic/lmic_config_preconditions.h \
+ C:\Users\xiaoy\Documents\Arduino\libraries\arduino-lmic\src\aes\../lmic/../../project_config/lmic_project_config.h \
  C:\Users\xiaoy\Documents\Arduino\libraries\arduino-lmic\src\aes\../lmic/hal.h

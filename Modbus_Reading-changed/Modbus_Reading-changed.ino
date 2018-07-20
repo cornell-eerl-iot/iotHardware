@@ -48,8 +48,8 @@ ModbusSerial<decltype(Serial1)> mySerial(&Serial1);
 
 static inline void powerOn(void)
 {
-        pinMode(kPowerOn, OUTPUT);
-        digitalWrite(kPowerOn, HIGH);
+    pinMode(kPowerOn, OUTPUT);
+    digitalWrite(kPowerOn, HIGH);
 }
 
 /**
@@ -60,20 +60,19 @@ unsigned long u32wait;
 void setup() {
   gCatena.begin();
   powerOn();
-  //host.begin(&mySerial, 19200); // baud-rate at 19200
-  //host.setTimeOut( 2000 ); // if there is no answer in 2000 ms, roll over
-  //host.setTxEnableDelay(100);
-  //gCatena.registerObject(&host);
-  //numreg = end_reg-start_reg;
-  //host.add_telegram(1,3,reg1,numreg,au16data);
-  //host.add_telegram(1,3,reg2,numreg,au16data);
+  host.begin(&mySerial, 19200); // baud-rate at 19200
+  host.setTimeOut( 2000 ); // if there is no answer in 2000 ms, roll over
+  host.setTxEnableDelay(100);
+  gCatena.registerObject(&host);
+  host.addTelegram(1,3,reg1,numreg,au16data);
+  //host.addTelegram(1,3,reg2,numreg,au16data);
 
   u32wait = millis() + 1000;
   u8state = u8query = 0; 
   
 }
 void loop() {
-  //host.print_telegrams();
+  host.printTelegrams();
   Serial.println("going");
 }
 

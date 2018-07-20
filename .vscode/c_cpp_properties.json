@@ -3,17 +3,14 @@
         {
             "name": "Win32",
             "includePath": [
+                "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.2.0\\**",
                 "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\mcci\\hardware\\samd\\1.1.0\\cores\\arduino\\avr",
-                "C:\\Users\\xiaoy\\Documents\\Arduino\\libraries\\Catena-Arduino-Platform\\src",
-                "C:\\Users\\xiaoy\\Documents\\Arduino\\libraries\\Modbus-for-Arduino"
-                
-                
+                "C:\\Users\\xiaoy\\Documents\\Arduino\\libraries\\Catena-Arduino-Platform\\src"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
                     "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\mcci\\hardware\\samd\\1.1.0\\cores\\arduino\\avr"
-                
                 ]
             },
             "compilerPath": "C:\\MinGW\\bin\\gcc.exe",
