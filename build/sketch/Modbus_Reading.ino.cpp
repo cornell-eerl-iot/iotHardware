@@ -1,3 +1,6 @@
+#include <Arduino.h>
+#line 1 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\Modbus_Reading\\Modbus_Reading.ino"
+#line 1 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\Modbus_Reading\\Modbus_Reading.ino"
 /**
  *  This is a modification of the simple_host example of the Modbus 
  *  for Arduino library from MCCI.
@@ -46,6 +49,13 @@ ModbusSerial<decltype(Serial1)> mySerial(&Serial1);
 
 #define kPowerOn        A3
 
+#line 49 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\Modbus_Reading\\Modbus_Reading.ino"
+static void powerOn(void);
+#line 63 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\Modbus_Reading\\Modbus_Reading.ino"
+void setup();
+#line 99 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\Modbus_Reading\\Modbus_Reading.ino"
+void loop();
+#line 49 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\Modbus_Reading\\Modbus_Reading.ino"
 static inline void powerOn(void)
 {
         pinMode(kPowerOn, OUTPUT);
@@ -182,3 +192,4 @@ void print_regs(float *convertedData, int data_size){
   }
 
 }
+

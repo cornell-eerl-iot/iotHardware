@@ -1,3 +1,5 @@
+# 1 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\Modbus_Reading\\Modbus_Reading.ino"
+# 1 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\Modbus_Reading\\Modbus_Reading.ino"
 /**
  *  This is a modification of the simple_host example of the Modbus 
  *  for Arduino library from MCCI.
@@ -15,8 +17,8 @@
  */
 
 
-#include <Catena.h>
-#include "Catena_ModbusRtu.h"
+# 19 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\Modbus_Reading\\Modbus_Reading.ino" 2
+# 20 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\Modbus_Reading\\Modbus_Reading.ino" 2
 
 
 using namespace McciCatena;
@@ -25,7 +27,7 @@ Catena gCatena;
 
 // data array for modbus network sharing
 uint16_t au16data[16];
-uint8_t u8state; 
+uint8_t u8state;
 uint8_t u8query;
 
 uint16_t reg1 = 1008;
@@ -44,12 +46,12 @@ int telegram_size=4;
 cCatenaModbusRtu host(0, A4); // this is host and RS-232 or USB-FTDI
 ModbusSerial<decltype(Serial1)> mySerial(&Serial1);
 
-#define kPowerOn        A3
+
 
 static inline void powerOn(void)
 {
-        pinMode(kPowerOn, OUTPUT);
-        digitalWrite(kPowerOn, HIGH);
+        pinMode(A3, (0x1));
+        digitalWrite(A3, (0x1));
 }
 
 void print_regs(float *convertedData, int data_size);
@@ -69,8 +71,8 @@ void setup() {
   gCatena.registerObject(&host);
   //numreg = end_reg-start_reg;
   u32wait = millis() + 1000;
-  u8state = u8query = 0; 
-  
+  u8state = u8query = 0;
+
   telegram[0].u8id = 1; // device address
   telegram[0].u8fct = 3; // function code (this one is registers read)
   telegram[0].u16RegAdd = reg1; // start address in device
@@ -99,15 +101,15 @@ void setup() {
 void loop() {
   for(int j=0;j<telegram_size;j++){
     switch( u8state ) {
-      case 0: 
+      case 0:
         if (long(millis() - u32wait) > 0) u8state++; // wait state
         break;
       //polling first set of registers
-      case 1: 
+      case 1:
         host.setLastError(ERR_SUCCESS);
         host.query( telegram[j] ); // send query (only once)
         if(!(j<telegram_size)){
-          Serial.println("");   
+          Serial.println("");
           }
         u8state++;
         break;
@@ -116,7 +118,7 @@ void loop() {
         if (host.getState() == COM_IDLE) {
           u8state=0;
           ERR_LIST lastError = host.getLastError();
-          
+
           if (host.getLastError() != ERR_SUCCESS) {
             Serial.print("Error ");
             Serial.print(int(lastError));
@@ -124,13 +126,13 @@ void loop() {
             float *convertedData = i16b_to_float(telegram[j]);
             print_regs(convertedData,telegram[j].u16CoilsNo/2);
             u32wait = !(j==telegram_size-1) ? (millis()) : (millis()+1000);
-            
+
           }
           break;
         }
       }
   }
-  
+
 }
 
 /**
@@ -149,7 +151,7 @@ float * i16b_to_float(modbus_t telegram){
   uint16_t low;
   uint32_t high;
   uint16_t *au16data = telegram.au16reg;
-  
+
   for (int i=0; i < telegram.u16CoilsNo; ++i)
   {
     //Serial.print(" ");
@@ -159,7 +161,7 @@ float * i16b_to_float(modbus_t telegram){
       }else{
         high = au16data[i];
         high = (high<<16);
-        process32Data[(i-1)/2] = low|high; 
+        process32Data[(i-1)/2] = low|high;
       }
   }
   memcpy(&convertedData,&process32Data, sizeof(process32Data));
@@ -177,7 +179,7 @@ float * i16b_to_float(modbus_t telegram){
  */
 void print_regs(float *convertedData, int data_size){
   for (int i = 0;i<data_size/2;i++){
-    Serial.print(convertedData[i],DEC);
+    Serial.print(convertedData[i],10);
     Serial.print(",");
   }
 
