@@ -1,3 +1,6 @@
+#include <Arduino.h>
+#line 1 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\Modbus_Reading-changed\\Modbus_Reading-changed.ino"
+#line 1 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\Modbus_Reading-changed\\Modbus_Reading-changed.ino"
 /**
  *  This is a modification of the simple_host example of the Modbus 
  *  for Arduino library from MCCI.
@@ -46,6 +49,13 @@ uint16_t numreg= 8;
 cCatenaModbusRtu host(0, A4); // this is host and RS-232 or USB-FTDI
 ModbusSerial<decltype(Serial1)> mySerial(&Serial1);
 
+#line 49 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\Modbus_Reading-changed\\Modbus_Reading-changed.ino"
+static void powerOn(void);
+#line 60 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\Modbus_Reading-changed\\Modbus_Reading-changed.ino"
+void setup();
+#line 74 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\Modbus_Reading-changed\\Modbus_Reading-changed.ino"
+void loop();
+#line 49 "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\Modbus_Reading-changed\\Modbus_Reading-changed.ino"
 static inline void powerOn(void)
 {
     pinMode(kPowerOn, OUTPUT);
@@ -74,4 +84,5 @@ void setup() {
 void loop() {
   host.printTelegrams();
 }
+
 

@@ -2,6 +2,7 @@
     "files.associations": {
         "*.tcc": "cpp",
         "array": "cpp",
-        "initializer_list": "cpp"
+        "initializer_list": "cpp",
+        "thread": "cpp"
     }
 }
