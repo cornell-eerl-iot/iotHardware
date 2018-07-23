@@ -17,7 +17,10 @@ private:
 	modbus_t *telegrams = new modbus_t[1];
 	int telegramsSize = 1; //Size of the current modbus_t telegrams
 
-	uint16_t container[16];//container to store data from query
+	uint16_t *container = new uint16_t[1];//container to store data from query
+	float *convertedData = new float[1];
+	int convertedDataSize = 1;
+
 	int queryCount=0;
 
 public:
@@ -28,28 +31,32 @@ public:
 	// the polling interface 
 	// we save the poll() results for the background, or 
 	// we might just want to look for completion other ways.
-	virtual void poll() { lastPollResult = this->Super::poll(); };
-	int8_t getPollResult() const { return this->lastPollResult; }
+	virtual void poll() {this->Super::poll();};
+	
 	virtual void poll_multiple_regs();
 	
 	virtual void query();
   	virtual void query(modbus_t telegram){this->Super::query(telegram);}
 	
-	void printTelegrams();
-	
-	void addTelegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil, uint16_t *reg);
-	void addTelegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil);
-	
-	uint16_t *get_container(){return container;} //get the result from poll.
+	void print_telegrams();
+	void print_convertedData();
 
+	void add_telegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil, uint16_t *reg);
+	void add_telegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil);
+	
+	uint16_t *getContainer(){return container;} //get the result from poll.
+	int8_t getPollResult() const { return this->lastPollResult; }
+	int getQueryCount() const {return this->queryCount;}
 
+	float *i16b_to_float();
 
 	};
 
 void cCatenaModbusRtu::poll_multiple_regs()
 {
-
+	
 }
+
 /**
  * @brief
  * This method sends queries to the device from 1st element to the last element in telegram
@@ -69,10 +76,10 @@ void cCatenaModbusRtu::query(){
  *	
  * @return none
  */
-void cCatenaModbusRtu::printTelegrams(){
+void cCatenaModbusRtu::print_telegrams(){
 	for(int i = 0; i<telegramsSize; i++){
 		Serial.print("ID: ");Serial.print(telegrams[i].u8id); // device address
-		Serial.print(" Func Code: ");Serial.print(telegrams[i].u8fct); // function code (this one is registers read)
+		Serial.print(" Func Code: ");Serial.print(telegrams[i].u8fct); // function code 
 		Serial.print(" Address: ");Serial.print(telegrams[i].u16RegAdd); // start address in device
 		Serial.print(" Num ele: ");Serial.println(telegrams[i].u16CoilsNo); // number of elements (coils or registers) to read
 		//Serial.println(" ");
@@ -87,7 +94,7 @@ void cCatenaModbusRtu::printTelegrams(){
  * @param
  *	parameter from the modbus_t struct
  */
-void cCatenaModbusRtu::addTelegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil, uint16_t *reg){
+void cCatenaModbusRtu::add_telegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil, uint16_t *reg){
 	if(telegramsCounter>=telegramsSize){
 		modbus_t *clone = telegrams;
 		telegrams = new modbus_t[telegramsSize*2];
@@ -98,7 +105,7 @@ void cCatenaModbusRtu::addTelegram(uint8_t id, uint8_t funct, uint16_t addr, uin
 		telegramsSize *=2;
 	}
 	telegrams[telegramsCounter].u8id = id; // device address
-	telegrams[telegramsCounter].u8fct = funct; // function code (this one is registers read)
+	telegrams[telegramsCounter].u8fct = funct; 
 	telegrams[telegramsCounter].u16RegAdd = addr; // start address in device
 	telegrams[telegramsCounter].u16CoilsNo = coil; // number of elements (coils or registers) to read
 	telegrams[telegramsCounter].au16reg = reg; // pointer to a memory array in the Arduino
@@ -113,11 +120,60 @@ void cCatenaModbusRtu::addTelegram(uint8_t id, uint8_t funct, uint16_t addr, uin
  *	
  * @return none
  */
-void cCatenaModbusRtu::addTelegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil){
-	this->addTelegram(id,funct,addr,coil,this->container);
+void cCatenaModbusRtu::add_telegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil){
+	this->add_telegram(id,funct,addr,coil,this->container);
 }
 
+/**
+ * @brief
+ * Combines the two 16-bit integer registers to 32-bit floats. We use operator "or" to 
+ * combine high and low registers together. For modbus, we assume that the first 
+ * register is the lower 2 bytes and the second register is the higher 2 bytes.
+ * 
+ * @return convertedData
+ */
+float * cCatenaModbusRtu::i16b_to_float(){
+	
+	if (this->convertedDataSize < telegrams[telegramsCounter].u16CoilsNo/2){
+		this->convertedDataSize = telegrams[telegramsCounter].u16CoilsNo/2;
+		this->convertedData = new float[this->convertedDataSize];
+	}
+	uint32_t process32Data[this->convertedDataSize];
+	float convertedflData[this->convertedDataSize]; //make a temp list so we can memcpy
+	uint16_t low;
+	uint32_t high;
+	uint16_t *au16data = telegrams[telegramsCounter].au16reg;
+  
+	for (int i = 0; i < telegrams[telegramsCounter].u16CoilsNo; ++i)
+	{
+		if(i%2 == 0){
+			low = au16data[i];
+		}else{
+			high = (au16data[i]<<16);
+			process32Data[(i-1)/2] = low|high; 
+		}
+	}
+	memcpy(convertedflData,process32Data, sizeof(process32Data));
+	for(int j = 0; j < this->convertedDataSize;j++){
+		this->convertedData[j] = convertedflData[j];
+	}
+	return this->convertedData;
+}
 
+/**
+ * @brief
+ * Prints the contents of convertedData array.
+ *	
+ * @return none
+ */
+void cCatenaModbusRtu::print_convertedData(){
+	if(this->queryCount==0) Serial.println("");
+	for (int i = 0;i<this->convertedDataSize;i++){
+		Serial.print(this->convertedData[i],DEC);
+		Serial.print(",");
+	}
+}
+  
 // remember to register this with catena framework at startup, e.g.:
 //	gCatena.registerObject(&myCatenaModbusRtu);
 //

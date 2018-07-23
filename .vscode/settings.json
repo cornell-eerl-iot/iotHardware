@@ -3,6 +3,8 @@
         "*.tcc": "cpp",
         "array": "cpp",
         "initializer_list": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "tuple": "cpp",
+        "lmic.h": "c"
     }
 }
