@@ -1,5 +1,9 @@
 #pragma once
 
+#undef min
+#undef max
+#include <vector>
+
 #include <Catena_PollableInterface.h> //in Catena_for_arduino library
 #include <ModbusRtu.h>
 
@@ -14,10 +18,13 @@ private:
 	int8_t lastPollResult = 0;
 	
 	int telegramsCounter = 0; //counter for the telegram index to add new telegrams by array indexing
+
 	modbus_t *telegrams = new modbus_t[1];
 	int telegramsSize = 1; //Size of the current modbus_t telegrams
 
 	uint16_t *container = new uint16_t[1];//container to store data from query
+	int containerSize = 1;
+
 	float *convertedData = new float[1];
 	int convertedDataSize = 1;
 
@@ -64,7 +71,7 @@ void cCatenaModbusRtu::poll_multiple_regs()
  * @return none
  */
 void cCatenaModbusRtu::query(){
-	if(queryCount>telegramsCounter){
+	if(queryCount>=telegramsCounter){
 		queryCount=0;
 	}
 	this->Super::query(telegrams[queryCount]);
@@ -121,6 +128,10 @@ void cCatenaModbusRtu::add_telegram(uint8_t id, uint8_t funct, uint16_t addr, ui
  * @return none
  */
 void cCatenaModbusRtu::add_telegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil){
+	if(coil>this->containerSize){
+		this->containerSize = coil;
+		this->container = new uint16_t [this->containerSize];
+	}
 	this->add_telegram(id,funct,addr,coil,this->container);
 }
 
@@ -134,17 +145,17 @@ void cCatenaModbusRtu::add_telegram(uint8_t id, uint8_t funct, uint16_t addr, ui
  */
 float * cCatenaModbusRtu::i16b_to_float(){
 	
-	if (this->convertedDataSize < telegrams[telegramsCounter].u16CoilsNo/2){
-		this->convertedDataSize = telegrams[telegramsCounter].u16CoilsNo/2;
+	if (this->convertedDataSize < telegrams[queryCount].u16CoilsNo/2){
+		this->convertedDataSize = telegrams[queryCount].u16CoilsNo/2;
 		this->convertedData = new float[this->convertedDataSize];
 	}
 	uint32_t process32Data[this->convertedDataSize];
 	float convertedflData[this->convertedDataSize]; //make a temp list so we can memcpy
 	uint16_t low;
 	uint32_t high;
-	uint16_t *au16data = telegrams[telegramsCounter].au16reg;
+	uint16_t *au16data = telegrams[queryCount].au16reg;
   
-	for (int i = 0; i < telegrams[telegramsCounter].u16CoilsNo; ++i)
+	for (int i = 0; i < telegrams[queryCount].u16CoilsNo; ++i)
 	{
 		if(i%2 == 0){
 			low = au16data[i];

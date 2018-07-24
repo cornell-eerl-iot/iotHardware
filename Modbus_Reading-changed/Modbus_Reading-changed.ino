@@ -57,13 +57,14 @@ static inline void powerOn(void)
 unsigned long u32wait;
 
 void setup() {
+  Serial.println("Starting setup()");
   gCatena.begin();
   powerOn();
   host.begin(&mySerial, 19200); // baud-rate at 19200
   host.setTimeOut( 2000 ); // if there is no answer in 2000 ms, roll over
   host.setTxEnableDelay(100);
   gCatena.registerObject(&host);
-  host.add_telegram(1,3,std::get<0>(REGBLOCK1) ,std::get<1>(REGBLOCK1),au16data);
+  host.add_telegram(1,3,std::get<0>(REGBLOCK1)-1 ,std::get<1>(REGBLOCK1),au16data);
   //host.addTelegram(1,3,reg2,numreg,au16data);
 
   u32wait = millis() + 1000;
@@ -76,18 +77,18 @@ void loop() {
   //Serial.println("In loop");
   switch( u8state ) {
   case 0: 
-    Serial.println("case 0");
+    //Serial.println("case 0");
     if (long(millis() - u32wait) > 0) u8state++; // wait state
     break;
    //polling first set of registers
   case 1: 
-    Serial.println("case 1");
+    //Serial.println("case 1");
     host.setLastError(ERR_SUCCESS);
     host.query(); // send query (only once)
     u8state++;
     break;
   case 2:
-    Serial.println("case 2");
+    //Serial.println("case 2");
     gCatena.poll(); // check incoming messages
     if (host.getState() == COM_IDLE) {
       u8state=0;
@@ -96,8 +97,13 @@ void loop() {
   		  Serial.print("Error ");
   		  Serial.print(int(lastError));
       } else {
-        float *convertedData = host.i16b_to_float();
-        host.print_convertedData();
+        Serial.println("Printing data");
+        for (int i=0; i<8;i++){
+          Serial.print(au16data[i]);Serial.print(" ");
+        }Serial.println("");
+        
+        //float *convertedData = host.i16b_to_float();
+        //host.print_convertedData();
         u32wait = millis()+1000;
       }
       break;

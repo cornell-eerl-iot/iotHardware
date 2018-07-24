@@ -5,6 +5,9 @@
         "initializer_list": "cpp",
         "thread": "cpp",
         "tuple": "cpp",
-        "lmic.h": "c"
+        "lmic.h": "c",
+        "vector": "cpp",
+        "limits": "cpp",
+        "chrono": "cpp"
     }
 }

@@ -1,7 +1,8 @@
 {
-    "board": "adafruit:samd:adafruit_feather_m0",
-    "sketch": "Modbus_Reading-changed\\Modbus_Reading-changed.ino",
-    "port": "COM7",
+    "board": "mcci:samd:mcci_catena_4470",
+    "port": "COM10",
     "output": "../build",
-    "build": "build"
+    "build": "build",
+    "configuration": "lorawan_region=us915",
+    "sketch": "modbus_ttn\\modbus_ttn.ino"
 }

@@ -43,15 +43,16 @@ static inline void powerOn(void)
 unsigned long u32wait;
 
 void setup() {
+  Serial.println("Starting setup");
   gCatena.begin();
   powerOn();
   host.begin(&mySerial, 19200); // baud-rate at 19200
   host.setTimeOut( 2000 ); // if there is no answer in 2000 ms, roll over
   host.setTxEnableDelay(100);
   gCatena.registerObject(&host);
-  host.add_telegram(1,3,std::get<0>(REGBLOCK1) ,std::get<1>(REGBLOCK1),au16data);
+  host.add_telegram(1,3,std::get<0>(REGBLOCK1)-1 ,std::get<1>(REGBLOCK1),au16data);
   //host.addTelegram(1,3,reg2,numreg,au16data);
-    ttn_otaa_init();
+  ttn_otaa_init();
   u32wait = millis() + 1000;
   u8state = 0; 
   Serial.println("past setup()");
@@ -62,41 +63,58 @@ void loop() {
   //Serial.println("In loop");
   switch( u8state ) {
   case 0: 
-    Serial.println("case 0");
+    //Serial.println("case 0");
     if (long(millis() - u32wait) > 0) u8state++; // wait state
     break;
    //polling first set of registers
   case 1: 
-    Serial.println("case 1");
+    //Serial.println("case 1");
     host.setLastError(ERR_SUCCESS);
     host.query(); // send query (only once)
     u8state++;
     break;
   case 2:
-    Serial.println("case 2");
+    //Serial.println("case 2");
+    //Gets 1 piece of data through modbus from the electric meter and sending that data to ttn
     gCatena.poll(); // check incoming messages
     if (host.getState() == COM_IDLE) {
-      u8state++;
       ERR_LIST lastError = host.getLastError();
       if (host.getLastError() != ERR_SUCCESS) {
         Serial.print("Error ");
-        Serial.print(int(lastError));
+        Serial.println(int(lastError));
+        u8state = 0;
+        u32wait = millis()+1000;
       } else {
-        float *convertedData = host.i16b_to_float();
-        host.print_convertedData(); 
+        //float *convertedData = host.i16b_to_float();
+        //host.print_convertedData(); 
+        
+        mydata = u16_to_u8(au16data,8);  
+        do_send(&sendjob);
+        Serial.println("Printing data");
+        for (int i=0; i<8;i++){
+          Serial.print(au16data[i]);Serial.print(" ");
+        }Serial.println("");
+        Serial.println("sending.."); 
+        for(int i = 0; i<16;i++){
+          Serial.print(mydata[i],HEX);Serial.print(" ");
+        }Serial.println(" ");
+        u8state++;
       }
-        mydata = new 
-       do_send(&sendjob);
       break;
     }
       case 3:
           if(SEND_COMPLETE){
+            Serial.println("send complete");
               u32wait = millis()+1000;
               u8state = 0;
+              SEND_COMPLETE = false;
+          }else{
+            os_runloop_once();
           }
-          break;
+      /*u8state = 0;
+      u32wait = millis()+1000;*/
+      break;
           
   }
 };
-
 

@@ -22,9 +22,11 @@ static const u1_t PROGMEM APPKEY[16] = { 0x21, 0xC8, 0x39, 0x66, 0x22, 0xEE, 0xF
 void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 
 
-static uint8_t mydata[] = "Hello, world!";
-static osjob_t sendjob;
-bool SEND_COMPLETE = false;
+uint8_t *mydata;
+osjob_t sendjob;
+
+u1_t DATA_LENGTH;
+bool SEND_COMPLETE = false; //indicator used to tell us when sending data is done.
 
 
 const unsigned TX_INTERVAL = 5;
@@ -179,7 +181,7 @@ void do_send(osjob_t* j){
         Serial.println(F("OP_TXRXPEND, not sending"));
     } else {
         // Prepare upstream data transmission at the next possible time.
-        LMIC_setTxData2(1, mydata, sizeof(mydata)-1, 0);
+        LMIC_setTxData2(1, mydata, DATA_LENGTH, 0);
         Serial.println(F("Packet queued"));
     }
     SEND_COMPLETE = false;
@@ -187,6 +189,10 @@ void do_send(osjob_t* j){
 }
 
 void ttn_otaa_init(){
+    delay(5000);
+    while (! Serial)
+        ;
+    Serial.println(F("Initializing TTN-LoRa settings"));
     #ifdef VCC_ENABLE
     // For Pinoccio Scout boards
     pinMode(VCC_ENABLE, OUTPUT);
@@ -202,6 +208,30 @@ void ttn_otaa_init(){
     LMIC_setDrTxpow(DR_SF7,14);
     LMIC_selectSubBand(1);
     SEND_COMPLETE = false;
+    //mydata = new uint8_t[4];
     // Start job (sending automatically starts OTAA too)
-    do_send(&sendjob);
+    //do_send(&sendjob);
+}
+
+/**
+ * @brief
+ * Converts 16-bit unsigned integer data representations from the modbus output
+ * to 8-bit unsigned representations. The 16-bit array from modbus should have lower 2 bytes
+ * followed by the higher 2 bytes. The 8-bit output from this function will be high bytes to 
+ * lower bytes. We assume that full registers are 32-bits or 4 bytes.
+ * 
+ * @param 16-bit array and its array length
+ * @return the processed 8-bit array
+ */
+uint8_t *u16_to_u8(uint16_t *aray, int array_size){
+    DATA_LENGTH = array_size*2;
+  uint8_t *out = new uint8_t[DATA_LENGTH];
+  uint8_t lowByte, highByte;
+  for(int i=0; i<array_size; i++){
+      lowByte = aray[i];
+      highByte = aray[i]>>8;
+      out[i*2] = highByte;
+      out[i*2+1] = lowByte;
+  }
+  return out;
 }
