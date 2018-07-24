@@ -16,7 +16,7 @@ Catena gCatena;
 uint16_t au16data[16];
 uint8_t u8state;  
 
-std::tuple<uint16_t,uint16_t> REGBLOCK1(1701,8);
+std::tuple<uint16_t,uint16_t> REGBLOCK1(1009,8);
 
 
 /**
@@ -104,7 +104,6 @@ void loop() {
     }
       case 3:
           if(SEND_COMPLETE){
-            Serial.println("send complete");
               u32wait = millis()+1000;
               u8state = 0;
               SEND_COMPLETE = false;
