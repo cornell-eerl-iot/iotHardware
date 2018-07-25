@@ -1,20 +1,15 @@
 /*
-
 Module:  maplewood-test.ino
-
 Function:
         Test app for Catena-4470 as used at Maplewood.
-
 Copyright notice and License:
         See LICENSE file accompanying this project.
-
 Author:
         Terry Moore, MCCI Corporation	April 2018
-
 */
 
 // line number should be l# - 2, for ArduinoUnit compatibility
-#line 2 "maplewood-test.ino"
+#line 17 "maplewood-test.ino"
 
 #include <Arduino.h>
 #include <Catena4470.h>
@@ -23,7 +18,6 @@ Author:
 #include <wiring_private.h>
 #include <Catena_Flash_at25sf081.h>
 #include <Catena_Guids.h>
-#include <RTCZero.h>
 
 #include <Adafruit_BME280.h>
 #include <BH1750.h>
@@ -289,7 +283,7 @@ testing(3_platform_80_modbus)
 	assertTestPass(2_platform_80_modbus_init);
 	static enum : unsigned { stInitial, stDelay, stQuery, stPoll, stCheck, stNextDev, stNextTry } state = stInitial;
 	static unsigned iDevice;
-	static const uint8_t myDevices[] = { 1 };
+	static const uint8_t myDevices[] = { 1, 2 };
 	static uint32_t lastUptime[sizeof(myDevices)];
 	static uint32_t lastQueryStart;
 	static modbus_t telegram;
@@ -695,5 +689,3 @@ bool flash_init(void)
 //-------------------------------------------------
 //      Sensor tests
 //-------------------------------------------------
-
-
