@@ -52,6 +52,8 @@ public:
 	void add_telegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil);
 	
 	uint16_t *getContainer(){return container;} //get the result from poll.
+	int getcontainerSize(){return containerSize;}
+
 	int8_t getPollResult() const { return this->lastPollResult; }
 	int getQueryCount() const {return this->queryCount;}
 
