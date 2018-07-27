@@ -27,11 +27,10 @@ using namespace McciCatena;
 Catena gCatena;
 
 // data array for modbus network sharing
-uint16_t au16data[16];
 uint8_t u8state;  
 
 std::tuple<uint16_t,uint16_t> REGBLOCK1(1701,8);
-
+std::tuple<uint16_t,uint16_t> REGBLOCK2(1009,8);
 
 /**
  *  Modbus object declaration
@@ -64,8 +63,8 @@ void setup() {
   host.setTimeOut( 2000 ); // if there is no answer in 2000 ms, roll over
   host.setTxEnableDelay(100);
   gCatena.registerObject(&host);
-  host.add_telegram(1,3,std::get<0>(REGBLOCK1)-1 ,std::get<1>(REGBLOCK1),au16data);
-  //host.addTelegram(1,3,reg2,numreg,au16data);
+  host.add_telegram(2,3,std::get<0>(REGBLOCK1)-1 ,std::get<1>(REGBLOCK1));
+  host.add_telegram(1,3,std::get<0>(REGBLOCK2)-1 ,std::get<1>(REGBLOCK2));
 
   u32wait = millis() + 1000;
   u8state = 0; 
@@ -97,6 +96,7 @@ void loop() {
   		  Serial.print("Error ");
   		  Serial.print(int(lastError));
       } else {
+        uint16_t *au16data = host.getContainer();
         Serial.println("Printing data");
         for (int i=0; i<8;i++){
           Serial.print(au16data[i]);Serial.print(" ");
@@ -106,8 +106,9 @@ void loop() {
         //host.print_convertedData();
         u32wait = millis()+1000;
       }
-      break;
+      
     }
+    break;
   }
 };
 

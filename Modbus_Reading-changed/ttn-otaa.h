@@ -2,7 +2,7 @@
 #include <lmic.h>
 #include <hal/hal.h>
 #include <SPI.h>
-#include "scheduler.h"
+
 
 #ifdef COMPILE_REGRESSION_TEST
 # define FILLMEIN 0
@@ -25,11 +25,8 @@ void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 uint8_t *mydata;
 osjob_t sendjob;
 
-u1_t DATA_LENGTH=1;
-bool SEND_COMPLETE = true; //indicator used to tell us when sending data is done.
-bool JOINED = false; //inducator when we joined the network
-
-
+u1_t DATA_LENGTH;
+bool SEND_COMPLETE = false; //indicator used to tell us when sending data is done.
 
 
 const unsigned TX_INTERVAL = 5;
@@ -88,7 +85,6 @@ void onEvent (ev_t ev) {
         case EV_JOINED:
             Serial.println(F("EV_JOINED"));
             {
-
               u4_t netid = 0;
               devaddr_t devaddr = 0;
               u1_t nwkKey[16];
@@ -112,9 +108,7 @@ void onEvent (ev_t ev) {
                       Serial.print(nwkKey[i], HEX);
               }
               Serial.println("");
-              JOINED = true;
             }
-            
             // Disable link check validation (automatically enabled
             // during join, but because slow data rates change max TX
       // size, we don't use it in this example.
@@ -195,7 +189,7 @@ void do_send(osjob_t* j){
 }
 
 void ttn_otaa_init(){
-    //delay(5000);
+    delay(5000);
     while (! Serial)
         ;
     Serial.println(F("Initializing TTN-LoRa settings"));
@@ -213,7 +207,8 @@ void ttn_otaa_init(){
     LMIC_setLinkCheckMode(0);
     LMIC_setDrTxpow(DR_SF7,14);
     LMIC_selectSubBand(1);
-    mydata = new uint8_t[1];
+    SEND_COMPLETE = false;
+    //mydata = new uint8_t[4];
     // Start job (sending automatically starts OTAA too)
     //do_send(&sendjob);
 }
@@ -241,42 +236,88 @@ uint8_t *u16_to_u8(uint16_t *aray, int array_size){
   return out;
 }
 
+
 /**
  * @brief
- * Converts 32-bit singl precision floating point representation to 16-bit half precision floating point
- * in order to reduce space used. 4bytes->2bytes
+ * Converts 32-bit single precision floating point numbers to 16-bit half precision floating
+ * point numbers.
  * 
- * @param 32-bit array containing IEEE single precision floating point reps and its array length
- * @return the processed 16-bit array containing IEEE half precision floating point reps
+ * @param float represented as uint32_t
+ * @return uint16_t representation of float 
+// bit 15 is the sign
+// bits 14..11 are the exponent
+// bits 10..0 are the fraction
  */
-uint16_t *f32_to_f16(uint16_t *aray, int array_size){
-    uint16_t *temp = new uint16_t[array_size/2];
-    for(int i = 0;i<array_size;i++){
-        uint32_t f = (aray[i])|(aray[++i]<<16);
-        uint16_t h = ((f>>16)&0x8000)|((((f&0x7f800000)-0x38000000)>>13)&0x7c00)|((f>>13)&0x03ff);
-        temp[(i-1)/2] = h;
+uint16_t f32_to_f16(uint32_t f){
+    uint8_t sign = (f&0x80000000)>>32;
+    uint8_t exponent = (f&0x7F800000)>>23;
+    uint32_t manti =  (f&0x00FFFFFFFF);
+    uint16_t output;
+    bound = exponent - 127;
+    if(bound <-24){
+        output = 0;
+    }else if (bound<-14){
+        output = 
     }
-    return temp;
 }
 
-/**
- * @brief
- * Processes the data converting from 16bit regs single precision float repr to 8bit regs half precision repr
- * 
- * @param 16-bit array containing IEEE single precision floating point reps and its array length
- * queue type that will be added to the existing queue.
- * 
- * @return the processed 16-bit array containing IEEE half precision floating point reps
- */
-void *process_data(uint16_t *aray, int array_size, queue_t* queue){
+
+
+#include <iostream>
+#include <cmath>
+
+using namespace std;
+
+
+int main()
+{
+    bool flag = false;
+    uint32_t f = 0x3b380000; 
+    uint16_t h = ((f>>16)&0x8000)|((((f&0x7f800000)-0x38000000)>>13)&0x7c00)|((f>>13)&0x03ff);
+    if((((f&0x7f800000)-0x38000000 )>>23 &0xf )== 0 or ((f&0x7f800000)-0x38000000 )>>23 &0xf==0x0f)
+    {
+        flag = true;
+    }
+    if(flag) cout<<"yes"<<endl;
     
-    for(int i = 0;i<array_size;i++){
-        uint32_t f = (aray[++i]<<16)|(aray[i]);
-        uint16_t h = ((f>>16)&0x8000)|((((f&0x7f800000)-0x38000000)>>13)&0x7c00)|((f>>13)&0x03ff);
-        queue->buffer.push_back(h&0x00FF);
-        queue->buffer.push_back((h&0xFF00)>>8);   
-    }   
+    int e =(((f&0x7f800000)-0x38000000 )>>23 &0x1f );
+    cout<<e<<endl;
+    e -= 15;
+    int man = (f>>13)&0x03ff;
+    float result = pow(2,e);
+    result=result*(1+pow(2,-10)*man);
+    
+    cout<<e<<endl;
+    
+    cout<<result<<endl;
 }
 
 
+    uint16_t aray[] = {0x0000,0x434a,0x0000,0x45cb};
+    int array_size = 4;
+    
+    uint8_t *temp = new uint8_t[array_size];
+    uint8_t lowByte, highByte;
+    uint32_t f;
+    for(int i = 0;i<array_size;i++){
+        f = (aray[i])|(aray[i+1]<<16);
+        uint16_t h = ((f>>16)&0x8000)|((((f&0x7f800000)-0x38000000)>>13)&0x7c00)|((f>>13)&0x03ff);
+        lowByte = h&0x00FF;
+        highByte = (h&0xFF00)>>8;
+        temp[i] = lowByte;
+        temp[i++] = highByte;
+    }
 
+    for(int i = 0; i<array_size;i++){
+        printf("%d ",temp[i]);
+    }printf("\n");
+    int e =(((f&0x7f800000)-0x38000000 )>>23 &0x1f );
+    e -= 15;
+    int man = (f>>13)&0x03ff;
+    float result = pow(2,e);
+    result=result*(1+pow(2,-10)*man);
+    
+    cout<<result<<endl;
+    
+    return 0;
+}

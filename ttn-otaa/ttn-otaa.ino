@@ -34,6 +34,7 @@
 #include <lmic.h>
 #include <hal/hal.h>
 #include <SPI.h>
+#include <RTCZero.h>
 //
 // For normal use, we require that you edit the sketch to replace FILLMEIN
 // with values assigned by the TTN console. However, for regression tests,
@@ -65,14 +66,18 @@ void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
 static const u1_t PROGMEM APPKEY[16] = { 0x21, 0xC8, 0x39, 0x66, 0x22, 0xEE, 0xF3, 0xDA, 0xAE, 0x2A, 0x92, 0x89, 0x82, 0x51, 0xD8, 0x29};//0xA2, 0x0E, 0x07, 0x34, 0x6E, 0x98, 0x71, 0xE0, 0x6C, 0x71, 0x98, 0x62, 0x53, 0x1A, 0xD4, 0xA3 };
 void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 
-uint8_t mydata[] = {0x17, 0xB8, 0x0, 0x9, 0x12, 0x86, 0x0, 0x0, 0x25, 0xE6, 0x0, 0x0, 0x0, 0xC9, 0x0, 0x13  };
+int length = 120;
+uint8_t mydata[120];
 
+RTCZero rtc;
+bool switc = true;
+byte t = 1;
 
 static osjob_t sendjob;
 
 // Schedule TX every this many seconds (might become longer due to duty
 // cycle limitations).
-const unsigned TX_INTERVAL = 5;
+const unsigned TX_INTERVAL = 0;
 
 // Pin mapping
 #if defined(ARDUINO_SAMD_FEATHER_M0)
@@ -154,6 +159,7 @@ void onEvent (ev_t ev) {
             // during join, but because slow data rates change max TX
       // size, we don't use it in this example.
             LMIC_setLinkCheckMode(0);
+            rtc.enableAlarm(rtc.MATCH_SS);
             break;
         /*
         || This event is defined but not used in the code. No
@@ -222,7 +228,7 @@ void do_send(osjob_t* j){
         Serial.println(F("OP_TXRXPEND, not sending"));
     } else {
         // Prepare upstream data transmission at the next possible time.
-        LMIC_setTxData2(1, mydata, sizeof(mydata)-1, 0);
+        LMIC_setTxData2(1, mydata, sizeof(mydata), 0);
         Serial.println(F("Packet queued"));
     }
     // Next TX is scheduled after TX_COMPLETE event.
@@ -232,8 +238,15 @@ void setup() {
     delay(5000);
     while (! Serial)
         ;
-    Serial.begin(9600);
+    Serial.begin(19200);
     Serial.println(F("Starting"));
+    pinMode(LED_BUILTIN,OUTPUT);
+    rtc.begin();
+    rtc.setSeconds(0);
+    rtc.setAlarmSeconds(t++);
+    //rtc.enableAlarm(rtc.MATCH_SS);
+  
+    rtc.attachInterrupt(alarmMatch);
 
     #ifdef VCC_ENABLE
     // For Pinoccio Scout boards
@@ -241,6 +254,10 @@ void setup() {
     digitalWrite(VCC_ENABLE, HIGH);
     delay(1000);
     #endif
+
+    for(int i = 0; i<length;i++){
+        mydata[i]=i;
+    }
 
     // LMIC init
     os_init();
@@ -250,11 +267,22 @@ void setup() {
     LMIC_setLinkCheckMode(0);
     LMIC_setDrTxpow(DR_SF7,14);
     LMIC_selectSubBand(1);
-
+    
     // Start job (sending automatically starts OTAA too)
     do_send(&sendjob);
 }
 
 void loop() {
     os_runloop_once();
+}
+
+
+void alarmMatch()
+{
+  switc = !switc;
+  digitalWrite(LED_BUILTIN,switc);
+  //delay(100);
+  Serial.println(t);
+  if(t>=60) t=0;
+  rtc.setAlarmSeconds(t++);
 }
