@@ -15,6 +15,7 @@ Catena gCatena;
 RTCZero rtc;
 // data array for modbus network sharing
 
+//User set variables
 std::tuple<uint16_t,uint16_t> REGBLOCK1(1701,6);
 std::tuple<uint16_t,uint16_t> REGBLOCK2(1707,6);
 std::tuple<uint16_t,uint16_t> REGBLOCK3(1601,4);
@@ -22,7 +23,7 @@ std::tuple<uint16_t,uint16_t> REGBLOCK4(1605,4);
 
 uint8_t buffer_time = 5;
 uint8_t sample_size = 20; //in bytes
-volatile uint8_t t=1; //time counter for RTC interrupts
+
 uint8_t SAMPLE_PERIOD = 5;
 uint8_t RATE = 1;
 
@@ -36,11 +37,14 @@ uint8_t RATE = 1;
 
 cCatenaModbusRtu host(0, A4); // this is host and RS-232 or USB-FTDI
 ModbusSerial<decltype(Serial1)> mySerial(&Serial1);
+
+//Global Variables
 volatile uint8_t u8state = 0;
 queue_t *new_tail;
 volatile uint8_t querying_count;
 volatile uint8_t accumulate_count;
 volatile int queue_count;
+volatile uint8_t t=0; //time counter for RTC interrupts
 
 static inline void powerOn(void)
 {
@@ -164,7 +168,7 @@ void alarmMatch()
 {
   accumulate_count--;
   if(accumulate_count == 0){
-    Serial.println("pushing tail");
+    Serial.print("pushing tail, queue length: "); Serial.println(queue_count);
     queue_count++;
     push_tail(new_tail);
     u8state = 0;
