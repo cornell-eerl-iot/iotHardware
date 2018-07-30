@@ -47,6 +47,8 @@ public:
 
 	void add_telegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil, uint16_t *reg);
 	void add_telegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil);
+	void add_telegram(modbus_t telegram);
+
 	int getTelegramSize() const {return this->telegramsSize;}
 	
 	uint16_t *getContainer(){return container;} //get the result from poll.
@@ -135,6 +137,28 @@ void cCatenaModbusRtu::add_telegram(uint8_t id, uint8_t funct, uint16_t addr, ui
 		this->container = new uint16_t [this->containerMaxSize];
 	}
 	this->add_telegram(id,funct,addr,coil,this->container);
+}
+
+
+void cCatenaModbusRtu::add_telegram(modbus_t telegram){
+	if(telegramsCounter>=telegramsSize){
+		modbus_t *clone = telegrams;
+		telegrams = new modbus_t[telegramsSize*2];
+		for(int i = 0; i<telegramsSize; i++){
+			telegrams[i] = clone[i];
+		}
+		delete[] clone;
+		telegramsSize *=2;
+	}
+	if(telegram.u16CoilsNo>this->containerMaxSize){
+		this->containerMaxSize = telegram.u16CoilsNo;
+		this->container = new uint16_t [this->containerMaxSize];
+	}
+	if(telegram.au16reg == nullptr){
+		telegram.au16reg = this->container;
+	}
+	telegrams[telegramsCounter] = telegram;
+	telegramsCounter++;
 }
 
 /**

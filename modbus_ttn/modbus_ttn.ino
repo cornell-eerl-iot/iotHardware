@@ -1,6 +1,5 @@
 
 #include <Catena.h>
-#include <tuple>
 #include "ttn-otaa.h"
 #include "Catena_ModbusRtu.h"
 #include <RTCZero.h>
@@ -16,16 +15,16 @@ RTCZero rtc;
 // data array for modbus network sharing
 
 //User set variables
-std::tuple<uint16_t,uint16_t> REGBLOCK1(1701,6);
-std::tuple<uint16_t,uint16_t> REGBLOCK2(1707,6);
-std::tuple<uint16_t,uint16_t> REGBLOCK3(1601,4);
-std::tuple<uint16_t,uint16_t> REGBLOCK4(1605,4);
+static const modbus_t T1 = {1,3,1701,6,nullptr};
+static const modbus_t T2 = {1,3,1707,6,nullptr};
+static const modbus_t T3 = {1,3,1601,4,nullptr};
+static const modbus_t T4 = {1,3,1605,4,nullptr};
 
-uint8_t buffer_time = 5;
-uint8_t sample_size = 20; //in bytes
+static const modbus_t TELEGRAMS[] = {T1,T2,T3,T4}; 
 
-uint8_t SAMPLE_PERIOD = 5;
-uint8_t RATE = 1;
+uint8_t SAMPLE_PERIOD = 5; //Number of samples to collect before sending over LoRa.
+uint8_t SAMPLE_RATE = 1; //Time in seconds between samples from WattNode [1:255]
+
 
 /**
  *  Modbus object declaration
@@ -38,12 +37,12 @@ uint8_t RATE = 1;
 cCatenaModbusRtu host(0, A4); // this is host and RS-232 or USB-FTDI
 ModbusSerial<decltype(Serial1)> mySerial(&Serial1);
 
-//Global Variables
+//Global Variables - user do not need to define.
 volatile uint8_t u8state = 0;
 queue_t *new_tail;
-volatile uint8_t querying_count;
-volatile uint8_t accumulate_count;
-volatile int queue_count;
+volatile uint8_t querying_count=0;
+volatile uint8_t accumulate_count=0;
+volatile int queue_count=0;
 volatile uint8_t t=0; //time counter for RTC interrupts
 
 static inline void powerOn(void)
@@ -63,17 +62,17 @@ void setup() {
   host.setTimeOut( 2000 ); // if there is no answer in 2000 ms, roll over
   host.setTxEnableDelay(100);
   gCatena.registerObject(&host);
-  host.add_telegram(1,3,std::get<0>(REGBLOCK1)-1 ,std::get<1>(REGBLOCK1));
-  host.add_telegram(1,3,std::get<0>(REGBLOCK2)-1 ,std::get<1>(REGBLOCK2));
-  host.add_telegram(1,3,std::get<0>(REGBLOCK3)-1 ,std::get<1>(REGBLOCK3));
-  host.add_telegram(1,3,std::get<0>(REGBLOCK4)-1 ,std::get<1>(REGBLOCK4));
 
+  for(int i = 0; i < sizeof(TELEGRAMS)/sizeof(TELEGRAMS[0]);i++){
+    host.add_telegram(TELEGRAMS[i]);
+  }
+  host.print_telegrams();
   ttn_otaa_init();
 
-  //Initalize RTC interrupts and timers.
-  
   do_send(&sendjob); //establish connection
-  while(!JOINED){//||!SEND_COMPLETE){
+
+  //Wait until we are able to join the network before start polling.
+  while(!JOINED){// Just want to join, will send in FSM.
     os_runloop_once();   
   }
   rtc.begin();
@@ -83,10 +82,10 @@ void setup() {
   rtc.setSeconds(0);
   rtc.enableAlarm(rtc.MATCH_SS);
 
-  u8state = 6;
-  u32wait = millis() + 1000;
-  querying_count = host.getTelegramSize();
-  accumulate_count = 1;
+  u8state = 6; //Start at sending stage so that we can send the initial package
+  u32wait = millis();
+  querying_count = host.getTelegramSize(); //
+  accumulate_count = 1;//number of samples collected before we send over LoRa
   Serial.println("past setup()");
 }
 
@@ -97,7 +96,7 @@ void loop() {
     switch(u8state){ 
           case 0:
             new_tail = new queue_t;
-            accumulate_count = SAMPLE_PERIOD;
+            accumulate_count = SAMPLE_PERIOD; //Reset global variable
             u8state++;
             break;
 
@@ -131,8 +130,7 @@ void loop() {
             }
             break;
           case 4:
-            //Serial.println("push tail");
-            //if(accumulate_count == 0) push_tail(new_tail);
+
             u8state++;
           break;
           case 5:
@@ -146,9 +144,6 @@ void loop() {
 
               Serial.print("sending.."); Serial.println(DATA_LENGTH);
               Serial.print("queue count: ");Serial.println(queue_count);
-              /*for(int i = 0; i<head->buffer.size();i++){
-                Serial.print(mydata[i],HEX);Serial.print(" ");
-              }Serial.println(" ");*/
             }
             u8state++;
             break;
@@ -166,19 +161,20 @@ void loop() {
  */
 void alarmMatch()
 {
+  
   accumulate_count--;
   if(accumulate_count == 0){
-    Serial.print("pushing tail, queue length: "); Serial.println(queue_count);
     queue_count++;
     push_tail(new_tail);
+    Serial.print("pushing tail, queue count: "); Serial.println(queue_count);
     u8state = 0;
   }else{
     u8state = 1;
   }
   u32wait = millis()+10;
   querying_count = host.getTelegramSize();
-  t+=RATE;
+  t+=SAMPLE_RATE;
   if(t>=60) t-=60;
   rtc.setAlarmSeconds(t);
-
+  Serial.println(t);
 }

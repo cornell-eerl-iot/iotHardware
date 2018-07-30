@@ -196,9 +196,8 @@ void do_send(osjob_t* j){
 
 void ttn_otaa_init(){
     //delay(5000);
-    while (! Serial)
-        ;
-    Serial.println(F("Initializing TTN-LoRa settings"));
+    //while (! Serial);
+    //Serial.println(F("Initializing TTN-LoRa settings"));
     #ifdef VCC_ENABLE
     // For Pinoccio Scout boards
     pinMode(VCC_ENABLE, OUTPUT);

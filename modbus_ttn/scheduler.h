@@ -9,7 +9,6 @@ struct queue_t
 };
 
 
-//Make the variables volatile since we want to change them during an interrupt.
 queue_t *queue = nullptr;
 queue_t *tail = nullptr;
 
