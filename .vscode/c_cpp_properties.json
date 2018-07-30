@@ -3,6 +3,7 @@
         {
             "name": "Win32",
             "includePath": [
+                "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.2.1\\**",
                 "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\mcci\\hardware\\samd\\1.1.0\\**"
             ],
             "intelliSenseMode": "msvc-x64",
