@@ -3,6 +3,8 @@
 #include <hal/hal.h>
 #include <SPI.h>
 #include "scheduler.h"
+#include "wdt.h"
+
 
 #ifdef COMPILE_REGRESSION_TEST
 # define FILLMEIN 0
@@ -133,6 +135,7 @@ void onEvent (ev_t ev) {
             break;
         case EV_REJOIN_FAILED:
             Serial.println(F("EV_REJOIN_FAILED"));
+            wdt_start();
             break;
             break;
         case EV_TXCOMPLETE:
@@ -149,6 +152,7 @@ void onEvent (ev_t ev) {
             break;
         case EV_LOST_TSYNC:
             Serial.println(F("EV_LOST_TSYNC"));
+            wdt_start();
             break;
         case EV_RESET:
             Serial.println(F("EV_RESET"));
@@ -159,6 +163,7 @@ void onEvent (ev_t ev) {
             break;
         case EV_LINK_DEAD:
             Serial.println(F("EV_LINK_DEAD"));
+            wdt_start();
             break;
         case EV_LINK_ALIVE:
             Serial.println(F("EV_LINK_ALIVE"));
@@ -177,6 +182,7 @@ void onEvent (ev_t ev) {
         default:
             Serial.print(F("Unknown event: "));
             Serial.println((unsigned) ev);
+            wdt_start();
             break;
     }
 }
@@ -202,7 +208,7 @@ void ttn_otaa_init(){
     // For Pinoccio Scout boards
     pinMode(VCC_ENABLE, OUTPUT);
     digitalWrite(VCC_ENABLE, HIGH);
-    delay(1000);
+    //delay(1000);
     #endif
     // LMIC init
     os_init();
@@ -212,9 +218,14 @@ void ttn_otaa_init(){
     LMIC_setLinkCheckMode(0);
     LMIC_setDrTxpow(DR_SF7,14);
     LMIC_selectSubBand(1);
-    mydata = new uint8_t[1];
+    mydata = new uint8_t[100];
+    for(int i = 0;i<100;i++){
+        mydata[i]=i;
+    }
     // Start job (sending automatically starts OTAA too)
     //do_send(&sendjob);
+    wdt_init();
+
 }
 
 /**

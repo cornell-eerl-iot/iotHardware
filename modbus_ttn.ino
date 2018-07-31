@@ -10,6 +10,7 @@
 using namespace McciCatena;
 
 
+Catena gCatena;
 RTCZero rtc;
 // data array for modbus network sharing
 
@@ -22,7 +23,7 @@ static const modbus_t T4 = {1,3,1605,4,nullptr};
 static const modbus_t TELEGRAMS[] = {T1,T2,T3,T4}; 
 
 uint8_t SAMPLE_PERIOD = 5; //Number of samples to collect before sending over LoRa.
-uint8_t SAMPLE_RATE = 2; //Time in seconds between samples from WattNode [1:255]
+uint8_t SAMPLE_RATE = 1; //Time in seconds between samples from WattNode [1:255]
 
 
 /**
@@ -41,7 +42,7 @@ volatile uint8_t u8state = 0;
 queue_t *new_tail;
 volatile uint8_t querying_count=0;
 volatile uint8_t accumulate_count=0;
-volatile uint8_t queue_count=0;
+volatile int queue_count=0;
 volatile uint8_t t=0; //time counter for RTC interrupts
 
 static inline void powerOn(void)
@@ -55,14 +56,34 @@ volatile unsigned long u32wait;
 
 void setup() {
   Serial.println("Starting setup");
-  powerOn();  
+  pinMode(LED_BUILTIN,OUTPUT);
+  delay(3000);
+digitalWrite(LED_BUILTIN,LOW);
+  
+  gCatena.begin();
+  delay(3000);
+digitalWrite(LED_BUILTIN,HIGH);
+  
+  powerOn();
+  delay(3000);
+digitalWrite(LED_BUILTIN,LOW);
+  
   host.begin(&mySerial, 19200); // baud-rate at 19200
+  delay(3000);
+digitalWrite(LED_BUILTIN,HIGH);
+
   host.setTimeOut( 2000 ); // if there is no answer in 2000 ms, roll over
   host.setTxEnableDelay(100);
+  gCatena.registerObject(&host);
 
   for(int i = 0; i < sizeof(TELEGRAMS)/sizeof(TELEGRAMS[0]);i++){
     host.add_telegram(TELEGRAMS[i]);
   }
+digitalWrite(LED_BUILTIN,OUTPUT);
+  delay(2000);
+digitalWrite(LED_BUILTIN,LOW);
+
+  //host.print_telegrams();
   ttn_otaa_init();
 
   do_send(&sendjob); //establish connection
@@ -83,6 +104,9 @@ void setup() {
   querying_count = host.getTelegramSize(); //
   accumulate_count = 1;//number of samples collected before we send over LoRa
   Serial.println("past setup()");
+  pinMode(LED_BUILTIN,OUTPUT);
+  delay(2000);
+  digitalWrite(LED_BUILTIN,LOW);
 }
 
 //have alarm be a setting where the alarm will trigger that it is time to sample again.
@@ -109,49 +133,45 @@ void loop() {
             break;
           
           case 3:
-            host.poll(); // check incoming messages
+            gCatena.poll(); // check incoming messages
             if (host.getState() == COM_IDLE) {
               ERR_LIST lastError = host.getLastError();
               if (host.getLastError() != ERR_SUCCESS) {
-                //Serial.print("Error ");
-                //Serial.println(int(lastError));
+                Serial.print("Error ");
+                Serial.println(int(lastError));
               } else {
                 process_data(host.getContainer(),host.getContainerCurrSize(),new_tail);  
                 /*for(int i = 0; i<new_tail->buffer.size();i++){
                   Serial.print(new_tail->buffer[i],HEX);Serial.print(" ");
                 }Serial.println(" "); */              
               }
-              
-            }
-            u8state = (querying_count==0) ? u8state+1 : 1;
+              u8state = (querying_count==0) ? u8state+1 : 1;
               u32wait = millis()+10;
+            }
             break;
           case 4:
-            if(queue_count>2){
-              for(int i =0;i<2;i++){
-                pop_front_queue();
-                queue_count--;
-              }
-            }
+
             u8state++;
           break;
           case 5:
             if(SEND_COMPLETE && queue){
               queue_t *head = pop_front_queue();
               queue_count--;
-              DATA_LENGTH = 100;//head->buffer.size();
-              //mydata = new uint8_t[DATA_LENGTH];
-              //std::copy ( head->buffer.begin(), head->buffer.end(), mydata );
+              DATA_LENGTH = head->buffer.size();
+              mydata = new uint8_t[DATA_LENGTH];
+              std::copy ( head->buffer.begin(), head->buffer.end(), mydata );
               do_send(&sendjob);
 
-              Serial.print("Sending.."); Serial.print(DATA_LENGTH);
-              Serial.print(" --- Queue count: ");Serial.println(queue_count);
+              Serial.print("sending.."); Serial.println(DATA_LENGTH);
+              Serial.print("queue count: ");Serial.println(queue_count);
             }
             u8state++;
             break;
           
           case 6:
-            os_runloop_once();  
+            os_runloop_once();   
+
+            
           break;
     }
 };
@@ -166,9 +186,8 @@ void alarmMatch()
   accumulate_count--;
   if(accumulate_count == 0){
     queue_count++;
-    //new_tail->buffer.push_back(rtc.getSeconds());
     push_tail(new_tail);
-    Serial.print("Pushing tail, Queue count: "); Serial.println(queue_count);
+    Serial.print("pushing tail, queue count: "); Serial.println(queue_count);
     u8state = 0;
   }else{
     u8state = 1;
