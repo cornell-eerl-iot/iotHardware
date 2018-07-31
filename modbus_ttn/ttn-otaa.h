@@ -27,14 +27,12 @@ void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 uint8_t *mydata;
 osjob_t sendjob;
 
-u1_t DATA_LENGTH=1;
+uint8_t DATA_LENGTH=1;
 bool SEND_COMPLETE = true; //indicator used to tell us when sending data is done.
 bool JOINED = false; //inducator when we joined the network
+bool FAILED = false; //connection lost
+uint8_t Connection_Num = 0; //number of reconnects 
 
-
-
-
-const unsigned TX_INTERVAL = 5;
 
 // Pin mapping
 #if defined(ARDUINO_SAMD_FEATHER_M0)
@@ -65,7 +63,6 @@ const lmic_pinmap lmic_pins = {
 #else
 # error "Unknown target"
 #endif
-
 
 
 void onEvent (ev_t ev) {
@@ -132,10 +129,11 @@ void onEvent (ev_t ev) {
         */
         case EV_JOIN_FAILED:
             Serial.println(F("EV_JOIN_FAILED"));
+            FAILED = true;
             break;
         case EV_REJOIN_FAILED:
             Serial.println(F("EV_REJOIN_FAILED"));
-            wdt_start();
+            FAILED = true;
             break;
             break;
         case EV_TXCOMPLETE:
@@ -152,7 +150,7 @@ void onEvent (ev_t ev) {
             break;
         case EV_LOST_TSYNC:
             Serial.println(F("EV_LOST_TSYNC"));
-            wdt_start();
+            FAILED = true;
             break;
         case EV_RESET:
             Serial.println(F("EV_RESET"));
@@ -163,7 +161,7 @@ void onEvent (ev_t ev) {
             break;
         case EV_LINK_DEAD:
             Serial.println(F("EV_LINK_DEAD"));
-            wdt_start();
+            FAILED = true;
             break;
         case EV_LINK_ALIVE:
             Serial.println(F("EV_LINK_ALIVE"));
@@ -218,16 +216,24 @@ void ttn_otaa_init(){
     LMIC_setLinkCheckMode(0);
     LMIC_setDrTxpow(DR_SF7,14);
     LMIC_selectSubBand(1);
-    mydata = new uint8_t[100];
-    for(int i = 0;i<100;i++){
-        mydata[i]=i;
+    mydata = new uint8_t[1];
+    for(int i = 0;i<1;i++){
+        mydata[i]=0xFF;
     }
     // Start job (sending automatically starts OTAA too)
     wdt_init();
-
+    
+    do_send(&sendjob); //establish connection
+    Connection_Num++;
+    JOINED = false;
+    //Wait until we are able to join the network before start polling.
+    while(!JOINED){// Just want to join, will send in FSM.
+        os_runloop_once();   
+    }
+    FAILED = false;
 }
 
-/**
+/*
  * @brief
  * Converts 16-bit unsigned integer data representations from the modbus output
  * to 8-bit unsigned representations. The 16-bit array from modbus should have lower 2 bytes
