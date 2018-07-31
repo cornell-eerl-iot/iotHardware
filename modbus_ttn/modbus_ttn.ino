@@ -128,18 +128,19 @@ void loop() {
           case 4:
             if(queue_count>2){
               for(int i =0;i<2;i++){
-                pop_front_queue();
+                queue_t * head = pop_front_queue();
                 queue_count--;
+                delete head;
               }
             }
             u8state++;
           break;
           case 5:
             if(SEND_COMPLETE && queue){
+              delete[] mydata;
               queue_t* head = pop_front_queue();
               queue_count--;
               DATA_LENGTH = head->buffer.size();
-              delete[] mydata;
               mydata = new uint8_t[DATA_LENGTH];
               std::copy ( head->buffer.begin(), head->buffer.end(), mydata );
               do_send(&sendjob);
@@ -154,10 +155,11 @@ void loop() {
           
           case 6:
             os_runloop_once(); 
+            wdt_disable();  
             if(FAILED){
               connectionReset();
             }
-            wdt_disable();  
+            
           break;
     }
 };

@@ -282,7 +282,7 @@ uint16_t *f32_to_f16(uint16_t *aray, int array_size){
  * 
  * @return the processed 16-bit array containing IEEE half precision floating point reps
  */
-void *process_data(uint16_t *aray, int array_size, queue_t* queue){
+void process_data(uint16_t *aray, int array_size, queue_t* queue){
     
     for(int i = 0;i<array_size;i++){
         uint32_t f = (aray[++i]<<16)|(aray[i]);
