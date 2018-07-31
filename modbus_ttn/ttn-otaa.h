@@ -223,7 +223,6 @@ void ttn_otaa_init(){
         mydata[i]=i;
     }
     // Start job (sending automatically starts OTAA too)
-    //do_send(&sendjob);
     wdt_init();
 
 }

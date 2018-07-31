@@ -113,8 +113,8 @@ void loop() {
             if (host.getState() == COM_IDLE) {
               ERR_LIST lastError = host.getLastError();
               if (host.getLastError() != ERR_SUCCESS) {
-                //Serial.print("Error ");
-                //Serial.println(int(lastError));
+                Serial.print("Error ");
+                Serial.println(int(lastError));
               } else {
                 process_data(host.getContainer(),host.getContainerCurrSize(),new_tail);  
                 /*for(int i = 0; i<new_tail->buffer.size();i++){
@@ -139,9 +139,9 @@ void loop() {
             if(SEND_COMPLETE && queue){
               queue_t *head = pop_front_queue();
               queue_count--;
-              DATA_LENGTH = 100;//head->buffer.size();
-              //mydata = new uint8_t[DATA_LENGTH];
-              //std::copy ( head->buffer.begin(), head->buffer.end(), mydata );
+              DATA_LENGTH = head->buffer.size();
+              mydata = new uint8_t[DATA_LENGTH];
+              std::copy ( head->buffer.begin(), head->buffer.end(), mydata );
               do_send(&sendjob);
 
               Serial.print("Sending.."); Serial.print(DATA_LENGTH);
@@ -166,7 +166,7 @@ void alarmMatch()
   accumulate_count--;
   if(accumulate_count == 0){
     queue_count++;
-    //new_tail->buffer.push_back(rtc.getSeconds());
+    new_tail->buffer.push_back(rtc.getSeconds());
     push_tail(new_tail);
     Serial.print("Pushing tail, Queue count: "); Serial.println(queue_count);
     u8state = 0;
