@@ -4,6 +4,7 @@
 #include "Catena_ModbusRtu.h"
 #include <RTCZero.h>
 #include <algorithm>
+#include <utility>
 
 #define kPowerOn        A3
 
@@ -22,7 +23,7 @@ static const modbus_t T4 = {1,3,1605,4,nullptr};
 static const modbus_t TELEGRAMS[] = {T1,T2,T3,T4}; 
 
 uint8_t SAMPLE_PERIOD = 5; //Number of samples to collect before sending over LoRa.
-uint8_t SAMPLE_RATE = 2; //Time in seconds between samples from WattNode [1:255]
+uint8_t SAMPLE_RATE = 0; //Time in seconds between samples from WattNode [1:255]
 
 
 /**
@@ -38,11 +39,11 @@ ModbusSerial<decltype(Serial1)> mySerial(&Serial1);
 
 //Global Variables - user do not need to define.
 volatile uint8_t u8state = 0;
-queue_t *new_tail;
+queue_t *new_tail = new queue_t;
 volatile uint8_t querying_count=0;
 volatile uint8_t accumulate_count=0;
 volatile uint8_t queue_count=0;
-volatile uint8_t t=0; //time counter for RTC interrupts
+void connectionReset();
 
 static inline void powerOn(void)
 {
@@ -51,7 +52,7 @@ static inline void powerOn(void)
 }
 
 
-volatile unsigned long u32wait;
+volatile unsigned long u32wait = 0;
 
 void setup() {
   Serial.println("Starting setup");
@@ -65,24 +66,19 @@ void setup() {
   }
   ttn_otaa_init();
 
-  do_send(&sendjob); //establish connection
-
-  //Wait until we are able to join the network before start polling.
-  while(!JOINED){// Just want to join, will send in FSM.
-    os_runloop_once();   
-  }
   rtc.begin();
-  t=5;
-  rtc.setAlarmSeconds(t);             
+  rtc.setAlarmSeconds(10);             
   rtc.attachInterrupt(alarmMatch);
+  rtc.setMinutes(0);
   rtc.setSeconds(0);
-  rtc.enableAlarm(rtc.MATCH_SS);
-
+  
   u8state = 6; //Start at sending stage so that we can send the initial package
-  u32wait = millis();
   querying_count = host.getTelegramSize(); //
-  accumulate_count = 1;//number of samples collected before we send over LoRa
+  //number of samples collected before we send over LoRa
+  accumulate_count = 0xFF;//initialized to max as indicator that we are starting
   Serial.println("past setup()");
+  rtc.enableAlarm(rtc.MATCH_SS); 
+
 }
 
 //have alarm be a setting where the alarm will trigger that it is time to sample again.
@@ -91,14 +87,17 @@ void loop() {
  
     switch(u8state){ 
           case 0:
+            wdt_enable();
             new_tail = new queue_t;
-            accumulate_count = SAMPLE_PERIOD; //Reset global variable
+            new_tail->buffer.push_back(Connection_Num);
+            new_tail->buffer.push_back(rtc.getMinutes());
+            new_tail->buffer.push_back(rtc.getSeconds());
+            accumulate_count = SAMPLE_PERIOD-1; //Reset global variable
             u8state++;
             break;
 
           case 1: 
             if (long(millis() - u32wait) > 0) u8state++; // wait state
-            
             break;
             
           case 2:
@@ -121,10 +120,10 @@ void loop() {
                   Serial.print(new_tail->buffer[i],HEX);Serial.print(" ");
                 }Serial.println(" "); */              
               }
-              
-            }
-            u8state = (querying_count==0) ? u8state+1 : 1;
+              u8state = (querying_count==0) ? u8state+1 : 1;
               u32wait = millis()+10;
+            }
+            
             break;
           case 4:
             if(queue_count>2){
@@ -137,21 +136,28 @@ void loop() {
           break;
           case 5:
             if(SEND_COMPLETE && queue){
-              queue_t *head = pop_front_queue();
+              queue_t* head = pop_front_queue();
               queue_count--;
               DATA_LENGTH = head->buffer.size();
+              delete[] mydata;
               mydata = new uint8_t[DATA_LENGTH];
               std::copy ( head->buffer.begin(), head->buffer.end(), mydata );
               do_send(&sendjob);
 
               Serial.print("Sending.."); Serial.print(DATA_LENGTH);
               Serial.print(" --- Queue count: ");Serial.println(queue_count);
+              delete head;
             }
-            u8state++;
-            break;
+          u8state++;
+          rtc.enableAlarm(rtc.MATCH_SS); 
+          break;
           
           case 6:
-            os_runloop_once();  
+            os_runloop_once(); 
+            if(FAILED){
+              connectionReset();
+            }
+            wdt_disable();  
           break;
     }
 };
@@ -163,20 +169,32 @@ void loop() {
  */
 void alarmMatch()
 {
-  accumulate_count--;
-  if(accumulate_count == 0){
+  rtc.disableAlarm();
+  if(accumulate_count == 0xFF){
+    if(SEND_COMPLETE)
+      u8state = 0;
+  }else if(accumulate_count == 0){
+    //Assuming that new_tail is already created.
     queue_count++;
-    new_tail->buffer.push_back(rtc.getSeconds());
     push_tail(new_tail);
     Serial.print("Pushing tail, Queue count: "); Serial.println(queue_count);
     u8state = 0;
   }else{
     u8state = 1;
   }
+  accumulate_count--;
   u32wait = millis()+10;
   querying_count = host.getTelegramSize();
-  t+=SAMPLE_RATE;
+  int t = rtc.getSeconds()+SAMPLE_RATE;
   if(t>=60) t-=60;
   rtc.setAlarmSeconds(t);
-  Serial.println(t);
+  Serial.print(rtc.getMinutes());Serial.print(":");Serial.println(rtc.getSeconds());
+}
+
+
+void connectionReset(){
+    rtc.disableAlarm();
+    ttn_otaa_init();
+    rtc.setAlarmSeconds(rtc.getSeconds()+1); 
+    rtc.enableAlarm(rtc.MATCH_SS);
 }

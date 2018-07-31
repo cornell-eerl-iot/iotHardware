@@ -4,8 +4,14 @@
 
 struct queue_t
 {
-  queue_t *next;
+  queue_t *next = nullptr;
   std::vector<uint8_t> buffer; 
+
+  ~queue_t(){
+	  delete next;
+	  buffer.clear();
+	  buffer.~vector();
+  }
 };
 
 
@@ -30,7 +36,7 @@ queue_t * pop_front_queue() {
 	if (tail == proc) {
 		tail = nullptr;
 	}
-	proc->next = NULL;
+	proc->next = nullptr;
 	return proc;
 }
 

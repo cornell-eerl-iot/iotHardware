@@ -134,6 +134,7 @@ void cCatenaModbusRtu::add_telegram(uint8_t id, uint8_t funct, uint16_t addr, ui
 void cCatenaModbusRtu::add_telegram(uint8_t id, uint8_t funct, uint16_t addr, uint16_t coil){
 	if(coil>this->containerMaxSize){
 		this->containerMaxSize = coil;
+		delete[] this->container;
 		this->container = new uint16_t [this->containerMaxSize];
 	}
 	this->add_telegram(id,funct,addr,coil,this->container);
@@ -152,6 +153,7 @@ void cCatenaModbusRtu::add_telegram(modbus_t telegram){
 	}
 	if(telegram.u16CoilsNo>this->containerMaxSize){
 		this->containerMaxSize = telegram.u16CoilsNo;
+		delete[] this->container;
 		this->container = new uint16_t [this->containerMaxSize];
 	}
 	if(telegram.au16reg == nullptr){

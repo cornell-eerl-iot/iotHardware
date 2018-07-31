@@ -18,8 +18,12 @@ void wdt_init(){
     
 }
 
-void wdt_start(){
+void wdt_enable(){
     *WDT_CTRL = 0x2;
+}
+
+void wdt_disable(){
+    *WDT_CTRL = 0x0;
 }
 
 void wdt_clear(){
