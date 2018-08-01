@@ -24,15 +24,19 @@ using namespace McciCatena;
 Catena gCatena;
 
 // data array for modbus network sharing
+uint16_t writeData[1];
+
 uint16_t au16data[16];
 uint32_t process32data[16];
 float convertedData[16];
 uint8_t u8state; 
 uint8_t u8query;
 uint16_t reg1 = 1008;
-uint16_t reg2 = 1146;
-uint16_t numreg= 8;
-
+uint16_t reg2 = 1602;
+uint16_t reg3 = 1602;
+uint16_t numreg = 8;
+uint16_t numreg2 = 4;
+uint16_t numreg3 = 1;
 /**
  *  Modbus object declaration
  *  u8id : node id = 0 for host, = 1..247 for device
@@ -54,7 +58,7 @@ static inline void powerOn(void)
 /**
  * This is a struct which contains a query to a device
  */
-modbus_t telegram[2];
+modbus_t telegram[3];
 
 unsigned long u32wait;
 
@@ -78,8 +82,19 @@ void setup() {
   telegram[1].u8id = 1; // device address
   telegram[1].u8fct = 3; // function code (this one is registers read)
   telegram[1].u16RegAdd = reg2; // start address in device
-  telegram[1].u16CoilsNo = numreg; // number of elements (coils or registers) to read
+  telegram[1].u16CoilsNo = numreg2; // number of elements (coils or registers) to read
   telegram[1].au16reg = au16data; // pointer to a memory array in the Arduino
+
+  telegram[2].u8id = 1; // device address
+  telegram[2].u8fct = 6; // function code (this one is registers read)
+  telegram[2].u16RegAdd = reg3; // start address in device
+  telegram[2].u16CoilsNo = numreg3; // number of elements (coils or registers) to read
+  telegram[2].au16reg = writeData; // pointer to a memory array in the Arduino
+  writeData[1] = 200;
+	for(int i = 0;i<10000;i++);
+	host.query(telegram[2]);
+	gCatena.poll();
+	
 }
 
 void loop() {
