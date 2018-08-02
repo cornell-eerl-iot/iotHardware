@@ -23,7 +23,7 @@ static const modbus_t T4 = {1,3,1605,4,nullptr};
 static const modbus_t TELEGRAMS[] = {T1,T2,T3,T4}; 
 
 uint8_t SAMPLE_PERIOD = 5; //Number of samples to collect before sending over LoRa.
-uint8_t SAMPLE_RATE = 0; //Time in seconds between samples from WattNode [1:255]
+uint8_t SAMPLE_RATE = 1; //Time in seconds between samples from WattNode [1:255]
 
 
 /**
@@ -44,6 +44,7 @@ volatile uint8_t querying_count=0;
 volatile uint8_t accumulate_count=0;
 volatile uint8_t queue_count=0;
 void connectionReset();
+uint8_t sample_rate = SAMPLE_RATE-1;
 
 static inline void powerOn(void)
 {
@@ -118,10 +119,10 @@ void loop() {
                 process_data(host.getContainer(),host.getContainerCurrSize(),new_tail);  
                 /*for(int i = 0; i<new_tail->buffer.size();i++){
                   Serial.print(new_tail->buffer[i],HEX);Serial.print(" ");
-                }Serial.println(" "); */              
+                }Serial.println(" "); */        
+                u8state = (querying_count==0) ? u8state+1 : 1;
+                u32wait = millis()+10;      
               }
-              u8state = (querying_count==0) ? u8state+1 : 1;
-              u32wait = millis()+10;
             }
             
             break;
@@ -166,7 +167,8 @@ void loop() {
 
 /**
  * @brief
- * Interrupt handler for alarm ring
+ * Interrupt handler for alarm ring. Used by RTC.
+ *  
  * 
  */
 void alarmMatch()
@@ -187,13 +189,20 @@ void alarmMatch()
   accumulate_count--;
   u32wait = millis()+10;
   querying_count = host.getTelegramSize();
-  int t = rtc.getSeconds()+SAMPLE_RATE;
+  int t = rtc.getSeconds()+sample_rate;
   if(t>=60) t-=60;
   rtc.setAlarmSeconds(t);
   Serial.print(rtc.getMinutes());Serial.print(":");Serial.println(rtc.getSeconds());
 }
 
 
+/**
+ * @brief
+ * Resets connection when the radio becomes disconnected. This reruns the initalization code.
+ * Will need to check if there is memory leakage.
+ *  
+ * 
+ */
 void connectionReset(){
     rtc.disableAlarm();
     ttn_otaa_init();

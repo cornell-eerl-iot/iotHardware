@@ -9,5 +9,6 @@
         "vector": "cpp",
         "limits": "cpp",
         "chrono": "cpp"
-    }
+    },
+    "python.jediEnabled": false
 }

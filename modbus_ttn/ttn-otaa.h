@@ -275,22 +275,72 @@ uint16_t *f32_to_f16(uint16_t *aray, int array_size){
 
 /**
  * @brief
- * Processes the data converting from 16bit regs single precision float repr to 8bit regs half precision repr
+ * Processes the data converting from 16-bit regs single precision float repr to 8bit regs half precision repr.
+ * half precision floats loses precision and have a lower range. Soft limit is now at 65536.0. However, this is up to
+ * the converter and the user to decide when the cutoff will be. Hard limit is at around 200000 
+ * where the value will wrap.
+ * As the numbers get larger, precision will decrease. 
  * 
- * @param 16-bit array containing IEEE single precision floating point reps and its array length
- * queue type that will be added to the existing queue.
+ * @param 16-bit array containing IEEE single precision floating point reps in lower byte followed by higher byte format 
+ * and its array length.
+ * Queue type that will be added to the existing queue.
  * 
- * @return the processed 16-bit array containing IEEE half precision floating point reps
  */
 void process_data(uint16_t *aray, int array_size, queue_t* queue){
-    
     for(int i = 0;i<array_size;i++){
+        uint16_t sign; 
+        uint16_t expo;
+        uint16_t manti;
         uint32_t f = (aray[++i]<<16)|(aray[i]);
-        uint16_t h = ((f>>16)&0x8000)|((((f&0x7f800000)-0x38000000)>>13)&0x7c00)|((f>>13)&0x03ff);
-        queue->buffer.push_back(h&0x00FF);
-        queue->buffer.push_back((h&0xFF00)>>8);   
-    }   
+        int f32e = (f&0x7F800000)>>23;
+        f32e-=127;
+        
+        if(f32e<-24){ // Very small numbers map to zero
+            sign=expo=manti=0;
+        }else if(f32e<-14){ // Small numbers map to denorms
+            sign = ((f>>16)&0x8000);
+            expo = 0;
+            manti = (0x0400>>(-f32e-14));
+        }else if(f32e<=16){ // Normal numbers just lose precision
+            sign = ((f>>16)&0x8000);
+            expo = ((((f&0x7f800000)-0x38000000)>>13)&0x7c00);
+            manti = ((f>>13)&0x03ff);
+        }else if(f32e<128){ // Large numbers map to Infinity
+            sign = ((f>>16)&0x8000);
+            expo = 0x7c00;
+            manti = 0;
+        }else{ // Infinity and NaN's stay Infinity and NaN's
+            sign = ((f>>16)&0x8000);
+            expo = 0x7c00;
+            manti = ((f>>13)&0x03ff);
+        }
+        uint16_t h = sign|expo|manti;
+        queue->buffer.push_back(h&0x00FF); //low byte, high byte
+        queue->buffer.push_back((h&0xFF00)>>8);  
+        
+        //float result = u16_to_f32(h);
+    }
 }
+
+/**
+ * @brief
+ * Takes in 16-bit half precision float representation and converts it to a float type number.
+ * 
+ * @param representation
+ * 
+ */
+float u16_to_f32(uint16_t h){
+    uint16_t sign = (h&0x8000)>>15;
+    uint16_t expo = (h&0x7c00)>>10;
+    uint16_t manti = h&0x3ff;
+    if(expo==0 && manti == 0) return 0.0;
+    int e = expo-15;
+    float result = pow(2,e);
+    result=result*(1+pow(2,-10)*manti);
+    result = sign?-result:result;
+    return result;
+}
+
 
 
 
