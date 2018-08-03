@@ -15,12 +15,16 @@ RTCZero rtc;
 // data array for modbus network sharing
 
 //User set variables
-static const modbus_t T1 = {1,3,1701,6,nullptr};
-static const modbus_t T2 = {1,3,1707,6,nullptr};
-static const modbus_t T3 = {1,3,1601,4,nullptr};
-static const modbus_t T4 = {1,3,1605,4,nullptr};
+uint16_t writeData[] = {200,200,200};
+uint16_t writeData2[] = {100,100,100};
+static const modbus_t T1 = {1,16,1603,3,writeData};
+static const modbus_t T2 = {2,16,1603,3,writeData2};
+static const modbus_t T3 = {1,3,1010,4,nullptr};
+static const modbus_t T4 = {1,3,1148,4,nullptr};
+static const modbus_t T5 = {2,3,1010,6,nullptr};
+static const modbus_t T6 = {2,3,1148,6,nullptr};
 
-static const modbus_t TELEGRAMS[] = {T1,T2,T3,T4}; 
+static const modbus_t TELEGRAMS[] = {T1,T2,T3,T4,T5,T6}; 
 
 uint8_t SAMPLE_PERIOD = 5; //Number of samples to collect before sending over LoRa.
 uint8_t SAMPLE_RATE = 1; //Time in seconds between samples from WattNode [1:255]

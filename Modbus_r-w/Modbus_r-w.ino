@@ -27,14 +27,12 @@ uint16_t writeData[]={200,200,200,200};
 uint16_t writeData2[] = {100,100,100,100};
 static const modbus_t T1 = {1,16,1602,4,writeData};
 static const modbus_t T5 = {2,16,1602,4,writeData2};
-static const modbus_t T4 = {1,3,1602,4,nullptr};
-static const modbus_t T2 = {1,3,1010,6,nullptr};
-static const modbus_t T3 = {1,3,1148,6,nullptr};
-static const modbus_t T6 = {2,3,1602,4,nullptr};
+static const modbus_t T2 = {1,3,1010,4,nullptr};
+static const modbus_t T3 = {1,3,1148,4,nullptr};
 static const modbus_t T7 = {2,3,1010,6,nullptr};
 static const modbus_t T8 = {2,3,1148,6,nullptr};
 
-static const modbus_t TELEGRAMS[] = {T1,T5,T2,T3,T4,T6,T7,T8}; 
+static const modbus_t TELEGRAMS[] = {T1,T5,T2,T3,T7,T8}; 
 
 
 // data array for modbus network sharing
@@ -78,7 +76,7 @@ void setup() {
 	u32wait = millis()+100;
 	Serial.print("past setup");
 }
-bool i = false;
+int i = 0;
 
 void loop() {
   switch( u8state ) {
@@ -96,19 +94,20 @@ void loop() {
     if (host.getState() == COM_IDLE) {
       u8state=0;
       ERR_LIST lastError = host.getLastError();
-      u32wait = millis() + 500;
+      u32wait = (host.getQueryCount() == (host.getTelegramCounter()-1))
+       ? millis() + 1000 : millis() + 10;
 
       if (host.getLastError() != ERR_SUCCESS) {
   		  Serial.print("Error ");
   		  Serial.print(int(lastError));
       } else {
-        host.print_container();
+        //host.print_container();
         //Serial.println("");
-        if(i){
-          //host.i16b_to_float();
-          //host.print_convertedData();
+        if(i>=2){
+          host.i16b_to_float();
+          host.print_convertedData();
         }
-        i=true;
+        i++;
         //Serial.println("");
       }
       

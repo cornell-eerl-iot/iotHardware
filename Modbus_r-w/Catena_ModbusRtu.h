@@ -52,7 +52,8 @@ public:
 	void add_telegram(modbus_t telegram);
 
 	int getTelegramSize() const {return this->telegramsSize;}
-	
+	int getTelegramCounter() const {return this->telegramsCounter;}
+
 	uint16_t *getContainer(){return container;} //get the result from poll.
 	int getContainerCurrSize(){return containerCurrSize;}
 
@@ -180,12 +181,9 @@ void cCatenaModbusRtu::add_telegram(modbus_t telegram){
  * @return convertedData
  */
 float * cCatenaModbusRtu::i16b_to_float(){
-	
-	if (this->convertedDataSize < telegrams[queryCount].u16CoilsNo/2){
-		delete[] this->convertedData;
-		this->convertedDataSize = telegrams[queryCount].u16CoilsNo/2;
-		this->convertedData = new float[this->convertedDataSize];
-	}
+	delete[] this->convertedData;
+	this->convertedDataSize = telegrams[queryCount].u16CoilsNo/2;
+	this->convertedData = new float[this->convertedDataSize];
 	uint16_t low;
 	uint32_t high;
 	uint16_t *au16data = telegrams[queryCount].au16reg;
@@ -212,9 +210,10 @@ void cCatenaModbusRtu::print_convertedData(){
 		if(this->queryCount==0) Serial.println("");
 		for (int i = 0;i<this->convertedDataSize;i++){
 			Serial.print(this->convertedData[i],DEC);
-			if(!(i==(this->convertedDataSize-1)))
-				Serial.print(",");
-		}Serial.print(",---,");
+			/*if(!(i==(this->convertedDataSize-1)))
+				Serial.print(",");*/
+			Serial.print(",");
+		}
 	
 }
 

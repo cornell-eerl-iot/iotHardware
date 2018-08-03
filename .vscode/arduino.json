@@ -3,5 +3,5 @@
     "port": "COM7",
     "output": "../build",
     "build": "build",
-    "sketch": "Modbus_r-w\\Modbus_r-w.ino"
+    "sketch": "modbus_ttn\\modbus_ttn.ino"
 }

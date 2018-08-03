@@ -7,7 +7,7 @@ import datetime
 file= open('testData.csv', 'a')
 
 ser = serial.Serial(
-    port='COM9',
+    port='COM7',
     baudrate=19200,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
