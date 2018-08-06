@@ -15,14 +15,10 @@ RTCZero rtc;
 // data array for modbus network sharing
 
 //User set variables
-uint16_t writeData[] = {200,200,200};
-uint16_t writeData2[] = {100,100,100};
-static const modbus_t T1 = {1,16,1603,3,writeData};
-static const modbus_t T2 = {2,16,1603,3,writeData2};
-static const modbus_t T3 = {1,3,1010,4,nullptr};
-static const modbus_t T4 = {1,3,1148,4,nullptr};
-static const modbus_t T5 = {2,3,1010,6,nullptr};
-static const modbus_t T6 = {2,3,1148,6,nullptr};
+static const modbus_t T1 = {1,3,1010,4,nullptr};
+static const modbus_t T2 = {1,3,1148,4,nullptr};
+static const modbus_t T3 = {2,3,1010,6,nullptr};
+static const modbus_t T4 = {2,3,1148,6,nullptr};
 
 static const modbus_t TELEGRAMS[] = {T1,T2,T3,T4,T5,T6}; 
 
@@ -164,7 +160,6 @@ void loop() {
             if(FAILED){
               connectionReset();
             }
-            
           break;
     }
 };
