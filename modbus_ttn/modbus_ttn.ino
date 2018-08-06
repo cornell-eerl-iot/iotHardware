@@ -20,7 +20,7 @@ static const modbus_t T2 = {1,3,1148,4,nullptr};
 static const modbus_t T3 = {2,3,1010,6,nullptr};
 static const modbus_t T4 = {2,3,1148,6,nullptr};
 
-static const modbus_t TELEGRAMS[] = {T1,T2,T3,T4,T5,T6}; 
+static const modbus_t TELEGRAMS[] = {T1,T2,T3,T4}; 
 
 uint8_t SAMPLE_PERIOD = 5; //Number of samples to collect before sending over LoRa.
 uint8_t SAMPLE_RATE = 1; //Time in seconds between samples from WattNode [1:255]
@@ -112,16 +112,19 @@ void loop() {
             host.poll(); // check incoming messages
             if (host.getState() == COM_IDLE) {
               ERR_LIST lastError = host.getLastError();
+              u32wait = millis()+10;      
               if (host.getLastError() != ERR_SUCCESS) {
                 Serial.print("Error ");
                 Serial.println(int(lastError));
               } else {
-                process_data(host.getContainer(),host.getContainerCurrSize(),new_tail);  
-                /*for(int i = 0; i<new_tail->buffer.size();i++){
-                  Serial.print(new_tail->buffer[i],HEX);Serial.print(" ");
-                }Serial.println(" "); */        
-                u8state = (querying_count==0) ? u8state+1 : 1;
-                u32wait = millis()+10;      
+                
+                  process_data(host.getContainer(),host.getContainerCurrSize(),new_tail);  
+                  /*for(int i = 0; i<new_tail->buffer.size();i++){
+                    Serial.print(new_tail->buffer[i],HEX);Serial.print(" ");
+                  }Serial.println(" "); */        
+                  u8state = (querying_count==0) ? u8state+1 : 1;
+                
+                
               }
             }
             
@@ -158,7 +161,7 @@ void loop() {
             os_runloop_once(); 
             wdt_disable();  
             if(FAILED){
-              connectionReset();
+              connectionReset(); 
             }
           break;
     }

@@ -16,6 +16,7 @@ private:
 	int8_t lastPollResult = 0;
 	
 	std::vector<modbus_t> w_telegrams;
+	bool w_telegram_isEmpty = true;
 
 	modbus_t *telegrams = new modbus_t[1];
 	int telegramsCounter = 0; //counter for the telegram index to add new telegrams by array indexing
@@ -60,6 +61,7 @@ public:
 	int8_t getPollResult() const { return this->lastPollResult; }
 	int getQueryCount() const {return this->queryCount;}
 	uint16_t getCurrCoil(){return telegrams[queryCount].u16CoilsNo;}
+	bool w_telegrams_isEmpty(){return w_telegram_isEmpty;}
 
 	float *i16b_to_float();
 
@@ -77,6 +79,7 @@ void cCatenaModbusRtu::query(){
 		this->Super::query(w_telegrams.back());
 		w_telegrams.pop_back();
 	}else{	
+		w_telegram_isEmpty = true;
 		queryCount++;
 		if(queryCount>=telegramsCounter){
 			queryCount=0;
@@ -122,6 +125,7 @@ void cCatenaModbusRtu::add_telegram(uint8_t id, uint8_t funct, uint16_t addr, ui
 	if(funct>4){
 		modbus_t telegram = {id,funct,addr,coil,reg};
 		w_telegrams.push_back(telegram);
+		w_telegram_isEmpty = false;
 	}else{
 		telegrams[telegramsCounter].u8id = id; // device address
 		telegrams[telegramsCounter].u8fct = funct; 

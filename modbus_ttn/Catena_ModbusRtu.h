@@ -16,6 +16,7 @@ private:
 	int8_t lastPollResult = 0;
 	
 	std::vector<modbus_t> w_telegrams;
+	bool w_telegram_isEmpty = true;
 
 	modbus_t *telegrams = new modbus_t[1];
 	int telegramsCounter = 0; //counter for the telegram index to add new telegrams by array indexing
@@ -52,13 +53,15 @@ public:
 	void add_telegram(modbus_t telegram);
 
 	int getTelegramSize() const {return this->telegramsSize;}
-	
+	int getTelegramCounter() const {return this->telegramsCounter;}
+
 	uint16_t *getContainer(){return container;} //get the result from poll.
 	int getContainerCurrSize(){return containerCurrSize;}
 
 	int8_t getPollResult() const { return this->lastPollResult; }
 	int getQueryCount() const {return this->queryCount;}
 	uint16_t getCurrCoil(){return telegrams[queryCount].u16CoilsNo;}
+	bool w_telegrams_isEmpty(){return w_telegram_isEmpty;}
 
 	float *i16b_to_float();
 
@@ -76,6 +79,7 @@ void cCatenaModbusRtu::query(){
 		this->Super::query(w_telegrams.back());
 		w_telegrams.pop_back();
 	}else{	
+		w_telegram_isEmpty = true;
 		queryCount++;
 		if(queryCount>=telegramsCounter){
 			queryCount=0;
@@ -121,6 +125,7 @@ void cCatenaModbusRtu::add_telegram(uint8_t id, uint8_t funct, uint16_t addr, ui
 	if(funct>4){
 		modbus_t telegram = {id,funct,addr,coil,reg};
 		w_telegrams.push_back(telegram);
+		w_telegram_isEmpty = false;
 	}else{
 		telegrams[telegramsCounter].u8id = id; // device address
 		telegrams[telegramsCounter].u8fct = funct; 
@@ -180,12 +185,9 @@ void cCatenaModbusRtu::add_telegram(modbus_t telegram){
  * @return convertedData
  */
 float * cCatenaModbusRtu::i16b_to_float(){
-	
-	if (this->convertedDataSize < telegrams[queryCount].u16CoilsNo/2){
-		delete[] this->convertedData;
-		this->convertedDataSize = telegrams[queryCount].u16CoilsNo/2;
-		this->convertedData = new float[this->convertedDataSize];
-	}
+	delete[] this->convertedData;
+	this->convertedDataSize = telegrams[queryCount].u16CoilsNo/2;
+	this->convertedData = new float[this->convertedDataSize];
 	uint16_t low;
 	uint32_t high;
 	uint16_t *au16data = telegrams[queryCount].au16reg;
@@ -212,9 +214,10 @@ void cCatenaModbusRtu::print_convertedData(){
 		if(this->queryCount==0) Serial.println("");
 		for (int i = 0;i<this->convertedDataSize;i++){
 			Serial.print(this->convertedData[i],DEC);
-			if(!(i==(this->convertedDataSize-1)))
-				Serial.print(",");
-		}Serial.print(",---,");
+			/*if(!(i==(this->convertedDataSize-1)))
+				Serial.print(",");*/
+			Serial.print(",");
+		}
 	
 }
 
