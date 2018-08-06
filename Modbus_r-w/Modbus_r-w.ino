@@ -18,7 +18,6 @@
 #include <Catena.h>
 #include "Catena_ModbusRtu.h"
 
-
 using namespace McciCatena;
 
 Catena gCatena;
@@ -60,6 +59,55 @@ static inline void powerOn(void)
  */
 unsigned long u32wait;
 
+
+std::vector<float> half_f;
+
+float u16_to_f32(uint16_t h){
+    uint16_t sign = (h&0x8000)>>15;
+    uint16_t expo = (h&0x7c00)>>10;
+    uint16_t manti = h&0x3ff;
+    if(expo==0 && manti == 0) return 0.0;
+    int e = expo-15;
+    float result = pow(2,e);
+    result=result*(1+pow(2,-10)*manti);
+    result = sign?-result:result;
+    return result;
+}
+
+void process_data(uint16_t *aray, int array_size){
+    for(int i = 0;i<array_size;i++){
+        uint16_t sign; 
+        uint16_t expo;
+        uint16_t manti;
+        uint32_t f = (aray[++i]<<16)|(aray[i]);
+        int f32e = (f&0x7F800000)>>23;
+        f32e-=127;
+        
+        if(f32e<-24){ // Very small numbers map to zero
+            sign=expo=manti=0;
+        }else if(f32e<-14){ // Small numbers map to denorms
+            sign = ((f>>16)&0x8000);
+            expo = 0;
+            manti = (0x0400>>(-f32e-14));
+        }else if(f32e<=16){ // Normal numbers just lose precision
+            sign = ((f>>16)&0x8000);
+            expo = ((((f&0x7f800000)-0x38000000)>>13)&0x7c00);
+            manti = ((f>>13)&0x03ff);
+        }else if(f32e<128){ // Large numbers map to Infinity
+            sign = ((f>>16)&0x8000);
+            expo = 0x7c00;
+            manti = 0;
+        }else{ // Infinity and NaN's stay Infinity and NaN's
+            sign = ((f>>16)&0x8000);
+            expo = 0x7c00;
+            manti = ((f>>13)&0x03ff);
+        }
+        uint16_t h = sign|expo|manti;
+        
+        half_f.push_back(u16_to_f32(h));
+    }
+}
+
 void setup() {
   gCatena.begin();
   powerOn();
@@ -76,6 +124,7 @@ void setup() {
 	u32wait = millis()+100;
 	Serial.print("past setup");
 }
+
 int i = 0;
 
 void loop() {
@@ -106,7 +155,14 @@ void loop() {
         if(i>=2){
           host.i16b_to_float();
           host.print_convertedData();
+          process_data(host.getContainer(),host.getContainerCurrSize());
+          Serial.print("-->");
+          for(int i =0;i<half_f.size();i++){
+            Serial.print(half_f[i]);Serial.print(" ");
+          }Serial.print("<--");
+          half_f.clear();
         }
+
         i++;
         //Serial.println("");
       }
