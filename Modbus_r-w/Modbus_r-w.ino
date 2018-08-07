@@ -99,7 +99,7 @@ void loop() {
       u8state=0;
       ERR_LIST lastError = host.getLastError();
       u32wait = (host.getQueryCount() == (host.getTelegramCounter()-1))
-       ? millis() + 950 : millis() + 10;
+       ? millis() + 950 : millis() + 20;
 
       if (host.getLastError() != ERR_SUCCESS) {
   		  Serial.print("Error ");
