@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "*.tcc": "cpp",
+        "array": "cpp",
+        "initializer_list": "cpp",
+        "thread": "cpp",
+        "tuple": "cpp",
+        "lmic.h": "c",
+        "vector": "cpp",
+        "limits": "cpp",
+        "chrono": "cpp"
+    },
+    "python.jediEnabled": false
+}
