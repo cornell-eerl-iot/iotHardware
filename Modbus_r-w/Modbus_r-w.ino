@@ -22,16 +22,21 @@ using namespace McciCatena;
 
 Catena gCatena;
 
-uint16_t writeData[]={200,200,200,200};
+uint16_t writeData[] = {200,200,200,100};
 uint16_t writeData2[] = {100,100,100,100};
-static const modbus_t T1 = {1,16,1602,4,writeData};
-static const modbus_t T5 = {2,16,1602,4,writeData2};
-static const modbus_t T2 = {1,3,1010,4,nullptr};
-static const modbus_t T3 = {1,3,1148,4,nullptr};
-static const modbus_t T7 = {2,3,1010,6,nullptr};
-static const modbus_t T8 = {2,3,1148,6,nullptr};
+uint16_t writeData3[] = {5,5,5,5};
 
-static const modbus_t TELEGRAMS[] = {T1,T5,T2,T3,T7,T8}; 
+
+static const modbus_t T5 = {1,16,1602,4,writeData};
+static const modbus_t T6 = {2,16,1602,4,writeData2};
+static const modbus_t T7 = {2,16,1602,4,writeData3};
+
+static const modbus_t T1 = {1,3,1010,4,nullptr};
+static const modbus_t T2 = {1,3,1148,4,nullptr};
+static const modbus_t T3 = {2,3,1010,6,nullptr};
+static const modbus_t T4 = {2,3,1148,6,nullptr};
+
+static const modbus_t TELEGRAMS[] = {T1,T2,T3,T4,T5,T6,T7}; 
 
 
 // data array for modbus network sharing
@@ -124,9 +129,6 @@ void setup() {
 	u32wait = millis()+100;
 	Serial.print("past setup");
 }
-
-int i = 0;
-
 void loop() {
   switch( u8state ) {
   case 0: 
@@ -144,26 +146,17 @@ void loop() {
       u8state=0;
       ERR_LIST lastError = host.getLastError();
       u32wait = (host.getQueryCount() == (host.getTelegramCounter()-1))
-       ? millis() + 1000 : millis() + 10;
+       ? millis() + 950 : millis() + 10;
 
       if (host.getLastError() != ERR_SUCCESS) {
   		  Serial.print("Error ");
   		  Serial.print(int(lastError));
       } else {
-        //host.print_container();
-        //Serial.println("");
-        if(i>=2){
+        if(host.w_telegrams_isEmpty())
           host.i16b_to_float();
           host.print_convertedData();
-          process_data(host.getContainer(),host.getContainerCurrSize());
-          Serial.print("-->");
-          for(int i =0;i<half_f.size();i++){
-            Serial.print(half_f[i]);Serial.print(" ");
-          }Serial.print("<--");
-          half_f.clear();
         }
 
-        i++;
         //Serial.println("");
       }
       
