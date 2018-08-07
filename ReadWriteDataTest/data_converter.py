@@ -9,10 +9,10 @@ import datetime
 
 file = open('Template1.csv', 'w', newline='')
 writer = csv.writer(file,delimiter = ',')
-ITERATIONS = 5
+ITERATIONS = 1800
 #time.sleep(3)
 ser = serial.Serial(
-    port='COM7',
+    port='COM6',
     baudrate=19200,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
@@ -31,6 +31,13 @@ header = ["200-A-Real","200-B-Real","200-A-Reactive","200-B-Reactive",\
 "100-C-Reactive","5-A-Real","5-B-Real","5-C-Real","5-A-Reactive","5-B-Reactive",\
 "5-C-Reactive"]
 header = ["Time"]+header
+writer.writerow(header)
+
+header = ["N/A","Fridge-Real","N/A","Fridge-Reactive",\
+"Disposal-Real","Microwave-Real","Dishwasher-Real","Disposal-Reactive","Microwave-Reactive",\
+"Dishwasher-Reactive","N/A","N/A","N/A","N/A","N/A",\
+"N/A"]
+header = ["Appliance"]+header
 writer.writerow(header)
 
 while counter>0:
