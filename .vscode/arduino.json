@@ -3,5 +3,5 @@
     "port": "COM6",
     "output": "../build",
     "build": "build",
-    "sketch": "Modbus_Reading\\Modbus_Reading.ino"
+    "sketch": "ttn-otaa\\ttn-otaa.ino"
 }
