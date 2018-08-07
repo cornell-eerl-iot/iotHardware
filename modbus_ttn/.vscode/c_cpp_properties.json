@@ -7,7 +7,7 @@
                 "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\mcci\\hardware\\samd\\1.1.0\\**",
                 "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.2.0\\**",
                 "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\mcci\\hardware\\samd\\1.1.0\\cores\\arduino\\avr",
-                "C:\\Users\\xiaoy\\Documents\\Arduino\\libraries"
+                "C:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\libraries"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
@@ -15,7 +15,7 @@
                     "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\mcci\\hardware\\samd\\1.1.0\\cores\\arduino\\avr"
                 ]
             },
-            "compilerPath": "C:\\MinGW\\bin\\g++.exe",
+            "compilerPath": "C:\\MinGW\\bin\\gcc.exe",
             "intelliSenseMode": "msvc-x64",
             "cStandard": "c11",
             "cppStandard": "c++17"
