@@ -2,6 +2,5 @@
     "board": "adafruit:samd:adafruit_feather_m0",
     "port": "COM7",
     "output": "../build",
-    "build": "build",
-    "sketch": "Modbus_r-w\\Modbus_r-w.ino"
+    "build": "build"
 }
