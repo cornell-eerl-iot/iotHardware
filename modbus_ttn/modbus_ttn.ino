@@ -1,6 +1,6 @@
 
 #include <Catena.h>
-#include <ttn-otaa.h>
+#include "ttn-otaa.h"
 #include "Catena_ModbusRtu.h"
 #include <RTCZero.h>
 #include <algorithm>
