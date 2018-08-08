@@ -40,3 +40,6 @@ emacs.core
 # visual micro files
 *.vcxitems
 vs-readme.txt
+
+#ignore build
+build/
