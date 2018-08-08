@@ -14,13 +14,24 @@ using namespace McciCatena;
 RTCZero rtc;
 // data array for modbus network sharing
 
+/**ASSUMPTION:
+ * CT's for slave 1 is 200A 
+ * CT's for slave 2 is 100A
+ */
 //User set variables
-static const modbus_t T1 = {1,3,1010,4,nullptr};
+static const modbus_t T1 = {1,3,1010,4,nullptr}; //using only the first 2 phases of slave 1
 static const modbus_t T2 = {1,3,1148,4,nullptr};
-static const modbus_t T3 = {2,3,1010,6,nullptr};
+static const modbus_t T3 = {2,3,1010,6,nullptr}; //using all 3 phases for slave 2
 static const modbus_t T4 = {2,3,1148,6,nullptr};
 
-static const modbus_t TELEGRAMS[] = {T1,T2,T3,T4}; 
+/**
+ * Send order will be: 
+ * Grid Power A real, Grid Power B real, Grid Power A Reactive, Grid Power B Reactive, 
+ * AHU A real, AHU B/RTU B real, RTU A real,
+ * AHU A Reactive, AHU B/RTU B Reactive, RTU A Reactive  
+*/
+static const modbus_t TELEGRAMS[] = {T1,T2,T3,T4}; //Order of transmitting
+
 
 uint8_t SAMPLE_PERIOD = 5; //Number of samples to collect before sending over LoRa.
 uint8_t SAMPLE_RATE = 1; //Time in seconds between samples from WattNode [1:255]
