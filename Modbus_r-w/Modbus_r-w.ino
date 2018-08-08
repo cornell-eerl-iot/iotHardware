@@ -22,21 +22,21 @@ using namespace McciCatena;
 
 Catena gCatena;
 
-uint16_t writeData[] = {200,200,200,100};
+uint16_t writeData[] = {200,200,200,200};
 uint16_t writeData2[] = {100,100,100,100};
-uint16_t writeData3[] = {5,5,5,5};
+uint16_t writeData3[] = {3};
 
 
 static const modbus_t T5 = {1,16,1602,4,writeData};
 static const modbus_t T6 = {2,16,1602,4,writeData2};
-static const modbus_t T7 = {2,16,1602,4,writeData3};
+static const modbus_t T7 = {1,6,1606,1,writeData3};
 
 static const modbus_t T1 = {1,3,1010,4,nullptr};
 static const modbus_t T2 = {1,3,1148,4,nullptr};
 static const modbus_t T3 = {2,3,1010,6,nullptr};
 static const modbus_t T4 = {2,3,1148,6,nullptr};
 
-static const modbus_t TELEGRAMS[] = {T1,T2,T3,T4,T5,T6,T7}; 
+static const modbus_t TELEGRAMS[] = {T5,T6,T7,T1,T2,T3,T4}; 
 
 
 // data array for modbus network sharing
@@ -159,9 +159,9 @@ void loop() {
 
         //Serial.println("");
       }
-      
+      break;
     }
-    break;
-  }
+    
+  
 }
 

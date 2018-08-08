@@ -9,10 +9,10 @@ import datetime
 
 file = open('Template1.csv', 'w', newline='')
 writer = csv.writer(file,delimiter = ',')
-ITERATIONS = 5
+ITERATIONS = 1800
 #time.sleep(3)
 ser = serial.Serial(
-    port='COM7',
+    port='COM6',
     baudrate=19200,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
