@@ -12,7 +12,7 @@ writer = csv.writer(file,delimiter = ',')
 ITERATIONS = 1800
 #time.sleep(3)
 ser = serial.Serial(
-    port='COM7',
+    port='COM6',
     baudrate=19200,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
@@ -26,16 +26,14 @@ ser = serial.Serial(
 counter = ITERATIONS
 print("starting program")
 
-header = ["200-A-Real","200-B-Real","200-A-Reactive","200-B-Reactive",\
+header = ["200-A-Real","200-B-Real","200-C-Real","200-A-Reactive","200-B-Reactive","200-C-Reactive",\
 "100-A-Real","100-B-Real","100-C-Real","100-A-Reactive","100-B-Reactive",\
-"100-C-Reactive","5-A-Real","5-B-Real","5-C-Real","5-A-Reactive","5-B-Reactive",\
-"5-C-Reactive"]
+"100-C-Reactive"]
 header = ["Time"]+header
 writer.writerow(header)
-header = ["Waste Disposal Real","Refrigerator-Real","Waste Disposal Reactive","Refrigerator-Reactive",\
-"Microwave-Real","Dishwasher-Real","Laptop Charging-Real","Microwave-Reactive","Dishwasher-Reactive",\
-"Laptop Charging -Reactive","5-A-Real","5-B-Real","5-C-Real","5-A-Reactive","5-B-Reactive",\
-"5-C-Reactive"]
+header = ["Refrigerator Real","Microwave-Real","Phone charger Real","Refrigerator Reactive","Microwave-Reactive",\
+"Phone charger Reactive","Dishwasher-Real","Disposal-Real","Laptop Charging-Real","Dishwasher-Reactive","Disposal-Reactive",\
+"Laptop Charging -Reactive"]
 header = ["Time"]+header
 writer.writerow(header)
 

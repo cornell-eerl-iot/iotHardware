@@ -22,17 +22,17 @@ using namespace McciCatena;
 
 Catena gCatena;
 
-uint16_t writeData[] = {200,200,200,200};
+uint16_t writeData[] = {200,200,200,5};
 uint16_t writeData2[] = {100,100,100,100};
-uint16_t writeData3[] = {3};
+uint16_t writeData3[] = {0};
 
 
 static const modbus_t T5 = {1,16,1602,4,writeData};
 static const modbus_t T6 = {2,16,1602,4,writeData2};
 static const modbus_t T7 = {1,6,1606,1,writeData3};
 
-static const modbus_t T1 = {1,3,1010,4,nullptr};
-static const modbus_t T2 = {1,3,1148,4,nullptr};
+static const modbus_t T1 = {1,3,1010,6,nullptr};
+static const modbus_t T2 = {1,3,1148,6,nullptr};
 static const modbus_t T3 = {2,3,1010,6,nullptr};
 static const modbus_t T4 = {2,3,1148,6,nullptr};
 
