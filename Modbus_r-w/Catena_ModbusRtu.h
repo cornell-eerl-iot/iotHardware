@@ -1,3 +1,12 @@
+/**
+ * This is modified version of the Catena_ModbusRtu.h from MCCI's Modbus for Arduino
+ * library. 
+ * This version has added class functions to better organize the polling for Wattnode
+ * modbus 
+ * 
+ * Comment updated 8/10/2018
+*/
+
 #pragma once
 
 #include <Catena_PollableInterface.h> //in Catena_for_arduino library
@@ -15,15 +24,14 @@ class cCatenaModbusRtu : public Modbus,
 private:
 	int8_t lastPollResult = 0;
 	
-	std::vector<modbus_t> w_telegrams;
-	bool w_telegram_isEmpty = true;
+	std::vector<modbus_t> w_telegrams; //vector for write telegrams
 
 	modbus_t *telegrams = new modbus_t[1];
 	int telegramsCounter = 0; //counter for the telegram index to add new telegrams by array indexing
 	int telegramsSize = 1; //Max size of the current modbus_t telegrams
 	int queryCount = -1;
 
-	uint16_t *container = new uint16_t[1];//container to store data from query
+	uint16_t *container = new uint16_t[1];//container to store data output from meter
 	int containerMaxSize = 1;
 	int containerCurrSize = 1;
 
@@ -61,7 +69,7 @@ public:
 	int8_t getPollResult() const { return this->lastPollResult; }
 	int getQueryCount() const {return this->queryCount;}
 	uint16_t getCurrCoil(){return telegrams[queryCount].u16CoilsNo;}
-	bool w_telegrams_isEmpty(){return w_telegram_isEmpty;}
+	bool w_telegrams_isEmpty(){return w_telegrams.empty();}
 
 	float *i16b_to_float();
 
@@ -71,7 +79,11 @@ public:
 /**
  * @brief
  * This method sends queries to the device from 1st element to the last element in telegram
- *	
+ * and then loops back to beginning.
+ * It will query write telegrams first (from the back to front) and pop the write telegrams 
+ * that are queried.
+ * The function updates the output container size
+ *	The function increments queryCount to the current count only when it is called.
  * @return none
  */
 void cCatenaModbusRtu::query(){
@@ -79,7 +91,6 @@ void cCatenaModbusRtu::query(){
 		this->Super::query(w_telegrams.back());
 		w_telegrams.pop_back();
 	}else{	
-		w_telegram_isEmpty = true;
 		queryCount++;
 		if(queryCount>=telegramsCounter){
 			queryCount=0;
@@ -125,7 +136,6 @@ void cCatenaModbusRtu::add_telegram(uint8_t id, uint8_t funct, uint16_t addr, ui
 	if(funct>4){
 		modbus_t telegram = {id,funct,addr,coil,reg};
 		w_telegrams.push_back(telegram);
-		w_telegram_isEmpty = false;
 	}else{
 		telegrams[telegramsCounter].u8id = id; // device address
 		telegrams[telegramsCounter].u8fct = funct; 

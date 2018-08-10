@@ -1,7 +1,14 @@
+/**
+ * Scheduler for a linked list queue with pop and push
+ * 
+ * Comment Updated 8/1/2018
+*/
+
 #undef min
 #undef max
 #include <vector>
 
+//queue with pointer to next and a vector that stores the buffer to be sent
 struct queue_t
 {
   queue_t *next = nullptr;

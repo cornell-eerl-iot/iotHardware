@@ -1,9 +1,17 @@
+/**
+ * Modified version of the ttn-otaa.ino file found in arduino-lmic
+ * library to be compatible with modbus_ttn.ino. 
+ * This version is a header with additional functions that 
+ * reduces the size of the payload to be send. Also supports reset
+ * 
+ * Comment Updated 8/10/2018
+*/
+
 
 #include <lmic.h>
 #include <hal/hal.h>
 #include <SPI.h>
 #include "scheduler.h"
-#include "wdt.h"
 
 
 #ifdef COMPILE_REGRESSION_TEST
@@ -24,10 +32,10 @@ static const u1_t PROGMEM APPKEY[16] = { 0x21, 0xC8, 0x39, 0x66, 0x22, 0xEE, 0xF
 void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 
 
-uint8_t *mydata;
+uint8_t *mydata; //pointer to data to be sent
 osjob_t sendjob;
 
-uint8_t DATA_LENGTH=1;
+uint8_t DATA_LENGTH=1; //length of data to be sent
 bool SEND_COMPLETE = true; //indicator used to tell us when sending data is done.
 bool JOINED = false; //inducator when we joined the network
 bool FAILED = false; //connection lost
@@ -180,7 +188,7 @@ void onEvent (ev_t ev) {
         default:
             Serial.print(F("Unknown event: "));
             Serial.println((unsigned) ev);
-            wdt_enable();
+            FAILED - true;
             break;
     }
 }
@@ -220,7 +228,6 @@ void ttn_otaa_init(){
         mydata[i]=0xFF;
     }
     // Start job (sending automatically starts OTAA too)
-    wdt_init();
     
     do_send(&sendjob); //establish connection
     Connection_Num++;
@@ -235,9 +242,10 @@ void ttn_otaa_init(){
 /**
  * @brief
  * Converts 16-bit unsigned integer data representations from the modbus output
- * to 8-bit unsigned representations. The 16-bit array from modbus should have lower 2 bytes
- * followed by the higher 2 bytes. The 8-bit output from this function will be high bytes to 
- * lower bytes. We assume that full registers are 32-bits or 4 bytes.
+ * to 8-bit unsigned representations. The 16-bit array from modbus should 
+ * have lower 2 bytes followed by the higher 2 bytes. The 8-bit output 
+ * from this function will be high bytes to lower bytes. We assume that full 
+ * registers are 32-bits or 4 bytes.
  * 
  * @param 16-bit array and its array length
  * @return the processed 8-bit array
@@ -257,11 +265,14 @@ uint8_t *u16_to_u8(uint16_t *aray, int array_size){
 
 /**
  * @brief
- * Converts 32-bit singl precision floating point representation to 16-bit half precision floating point
- * in order to reduce space used. 4bytes->2bytes
+ * Converts 32-bit single precision floating point representation to 16-bit 
+ * half precision floating point representation in order to reduce space used. 
+ * 4bytes->2bytes
  * 
- * @param 32-bit array containing IEEE single precision floating point reps and its array length
- * @return the processed 16-bit array containing IEEE half precision floating point reps
+ * @param 32-bit array containing IEEE single precision floating point reps 
+ * and its array length
+ * @return the processed 16-bit array containing IEEE half precision floating 
+ * point reps
  */
 uint16_t *f32_to_f16(uint16_t *aray, int array_size){
     uint16_t *temp = new uint16_t[array_size/2];
@@ -275,14 +286,15 @@ uint16_t *f32_to_f16(uint16_t *aray, int array_size){
 
 /**
  * @brief
- * Processes the data converting from 16-bit regs single precision float repr to 8bit regs half precision repr.
- * half precision floats loses precision and have a lower range. Soft limit is now at 65536.0. However, this is up to
- * the converter and the user to decide when the cutoff will be. Hard limit is at around 200000 
- * where the value will wrap.
- * As the numbers get larger, precision will decrease. 
+ * Processes the data converting from 16-bit regs single precision float repr 
+ * to 8bit regs half precision repr. Half precision floats loses precision and 
+ * have a lower range. Soft limit is now at 65536.0. However, this is up to
+ * the converter and the user to decide when the cutoff will be. Hard limit is 
+ * at around 200000 where the value will wrap.
+ * As the numbers get larger, precision will decrease such as lack of decimals. 
  * 
- * @param 16-bit array containing IEEE single precision floating point reps in lower byte followed by higher byte format 
- * and its array length.
+ * @param 16-bit array containing IEEE single precision floating point reps in 
+ * lower byte followed by higher byte format and its array length.
  * Queue type that will be added to the existing queue.
  * 
  */
@@ -324,9 +336,13 @@ void process_data(uint16_t *aray, int array_size, queue_t* queue){
 
 /**
  * @brief
- * Takes in 16-bit half precision float representation and converts it to a float type number.
+ * Takes in 16-bit half precision float representation and converts it to a 
+ * float type number.
+ * There are multiple ways to do this. This is the formula version. There 
+ * are versions using memcpy and union. The differences are not that 
+ * significant.
  * 
- * @param representation
+ * @param 16-bit representation
  * 
  */
 float u16_to_f32(uint16_t h){

@@ -3,17 +3,11 @@
  *  for Arduino library from MCCI.
  *  
  *  The purpose of this implementation is to query an array of data
- *  from an external Wattnode Modbus meter via RS-485. 
+ *  from an external Wattnode Modbus meter via RS-485 using the Modbus
+ *  protocol. 
  *  
- *  The registers to query are:  
- *  Real Power: 
- *      Sum: 1009-10
- *      A,B,C: 1011-2, 1013-4, 1015-6
- *  Reactive Power:
- *      Sum: 1147-8
- *      A,B,C: 1149-50, 1151-2, 1153-4
+ *  Comment updated 8/10/2018
  */
-
 
 #include <Catena.h>
 #include "Catena_ModbusRtu.h"
@@ -22,25 +16,30 @@ using namespace McciCatena;
 
 Catena gCatena;
 
-uint16_t writeData[] = {200,200,200,5};
-uint16_t writeData2[] = {100,100,100,100};
-uint16_t writeData3[] = {0};
+uint16_t writeData[] = {200,200,5}; //Setting CT configurations
+uint16_t writeData2[] = {100,100,100};
+uint16_t writeData3[] = {0}; //Setting CT directions
 
+/** Initializing the modbus_t telegrams. There is an offset of 1
+ * for the addresses we put into the initializer. The addresses we 
+ * put into the telegram should be address on the manual minus 1. 
+*/ 
+static const modbus_t T5 = {1,16,1603,3,writeData}; //Setting CT's for device 1
+static const modbus_t T6 = {2,16,1603,3,writeData2}; //Setting CT's for device 2
+static const modbus_t T7 = {1,6,1606,1,writeData3}; //Setting CT directions for slave 1
 
-static const modbus_t T5 = {1,16,1602,4,writeData};
-static const modbus_t T6 = {2,16,1602,4,writeData2};
-static const modbus_t T7 = {1,6,1606,1,writeData3};
+static const modbus_t T1 = {1,3,1010,6,nullptr}; //Reading device 1 real power
+static const modbus_t T2 = {1,3,1148,6,nullptr}; //Reading device 1 reactive power
+static const modbus_t T3 = {2,3,1010,6,nullptr}; //Reading device 2 real power
+static const modbus_t T4 = {2,3,1148,6,nullptr}; //Reading device 2 reactive power
 
-static const modbus_t T1 = {1,3,1010,6,nullptr};
-static const modbus_t T2 = {1,3,1148,6,nullptr};
-static const modbus_t T3 = {2,3,1010,6,nullptr};
-static const modbus_t T4 = {2,3,1148,6,nullptr};
-
+/** Adding telegram to an array. The transmitting of the telegrams will be in order.
+ * The telegrams will be queried in a order and loop back. Write functions will only
+ * be queried once and then removed.
+*/
 static const modbus_t TELEGRAMS[] = {T5,T6,T7,T1,T2,T3,T4}; 
 
 
-// data array for modbus network sharing
-uint8_t u8state; 
 /**
  *  Modbus object declaration
  *  u8id : node id = 0 for host, = 1..247 for device
@@ -60,58 +59,11 @@ static inline void powerOn(void)
 }
 
 /**
- * This is a struct which contains a query to a device
- */
-unsigned long u32wait;
-
-
-std::vector<float> half_f;
-
-float u16_to_f32(uint16_t h){
-    uint16_t sign = (h&0x8000)>>15;
-    uint16_t expo = (h&0x7c00)>>10;
-    uint16_t manti = h&0x3ff;
-    if(expo==0 && manti == 0) return 0.0;
-    int e = expo-15;
-    float result = pow(2,e);
-    result=result*(1+pow(2,-10)*manti);
-    result = sign?-result:result;
-    return result;
-}
-
-void process_data(uint16_t *aray, int array_size){
-    for(int i = 0;i<array_size;i++){
-        uint16_t sign; 
-        uint16_t expo;
-        uint16_t manti;
-        uint32_t f = (aray[++i]<<16)|(aray[i]);
-        int f32e = (f&0x7F800000)>>23;
-        f32e-=127;
-        
-        if(f32e<-24){ // Very small numbers map to zero
-            sign=expo=manti=0;
-        }else if(f32e<-14){ // Small numbers map to denorms
-            sign = ((f>>16)&0x8000);
-            expo = 0;
-            manti = (0x0400>>(-f32e-14));
-        }else if(f32e<=16){ // Normal numbers just lose precision
-            sign = ((f>>16)&0x8000);
-            expo = ((((f&0x7f800000)-0x38000000)>>13)&0x7c00);
-            manti = ((f>>13)&0x03ff);
-        }else if(f32e<128){ // Large numbers map to Infinity
-            sign = ((f>>16)&0x8000);
-            expo = 0x7c00;
-            manti = 0;
-        }else{ // Infinity and NaN's stay Infinity and NaN's
-            sign = ((f>>16)&0x8000);
-            expo = 0x7c00;
-            manti = ((f>>13)&0x03ff);
-        }
-        uint16_t h = sign|expo|manti;
-        
-        half_f.push_back(u16_to_f32(h));
-    }
-}
+ * Global Variables
+*/
+unsigned long u32wait; //wait time between modbus receiving and sending
+uint8_t u8state; //State for FSM
+bool write_empty = false;
 
 void setup() {
   gCatena.begin();
@@ -120,13 +72,12 @@ void setup() {
   host.setTimeOut( 2000 ); // if there is no answer in 2000 ms, roll over
   host.setTxEnableDelay(100);
   gCatena.registerObject(&host);
-  
-  u8state = 0; 
-  
+  u8state = 0;
+    //add telegrams to host.
   for(int i = 0; i < sizeof(TELEGRAMS)/sizeof(TELEGRAMS[0]);i++){
     host.add_telegram(TELEGRAMS[i]);
   }
-	u32wait = millis()+100;
+	u32wait = millis()+100; //100 millisecond delay
 	Serial.print("past setup");
 }
 void loop() {
@@ -137,6 +88,7 @@ void loop() {
    //polling first set of registers
   case 1: 
     host.setLastError(ERR_SUCCESS);
+    write_empty = host.w_telegrams_isEmpty();
     host.query(); // send query (only once)
     u8state++;
     break;
@@ -152,7 +104,7 @@ void loop() {
   		  Serial.print("Error ");
   		  Serial.print(int(lastError));
       } else {
-        if(host.w_telegrams_isEmpty())
+        if(write_empty){
           host.i16b_to_float();
           host.print_convertedData();
         }
@@ -161,7 +113,6 @@ void loop() {
       }
       break;
     }
-    
-  
+  }
 }
 

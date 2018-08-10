@@ -1,3 +1,14 @@
+/**
+ * This is a modification of the simple_host example of the Modbus 
+ * for Arduino library from MCCI.
+ * This sketch uses a combination of interrupts and headers to poll data
+ * from WattNode meters using Modbus, processes the data, and then sends it 
+ * over LoRa to TTN (or other server).
+ * 
+ * 
+ * Comment Updated 8/10/2018
+*/
+
 
 #include <Catena.h>
 #include "ttn-otaa.h"
@@ -5,28 +16,27 @@
 #include <RTCZero.h>
 #include <algorithm>
 #include <utility>
+#include "wdt.h"
 
 #define kPowerOn        A3
 
 using namespace McciCatena;
 
 
-RTCZero rtc;
-// data array for modbus network sharing
-
 /**ASSUMPTION:
- * CT's for slave 1 is 200A 
- * CT's for slave 2 is 100A
+ * CT's for device 1 is 200A 
+ * CT's for device 2 is 100A
  */
 //User set variables
-static const modbus_t T1 = {1,3,1010,4,nullptr}; //using only the first 2 phases of slave 1
+static const modbus_t T1 = {1,3,1010,4,nullptr}; //using only the first 2 phases of device 1
 static const modbus_t T2 = {1,3,1148,4,nullptr};
-static const modbus_t T3 = {2,3,1010,6,nullptr}; //using all 3 phases for slave 2
+static const modbus_t T3 = {2,3,1010,6,nullptr}; //using all 3 phases for device 2
 static const modbus_t T4 = {2,3,1148,6,nullptr};
 
 /**
  * Send order will be: 
- * Grid Power A real, Grid Power B real, Grid Power A Reactive, Grid Power B Reactive, 
+ * Grid Power A real, Grid Power B real, 
+ * Grid Power A Reactive, Grid Power B Reactive, 
  * AHU A real, AHU B/RTU B real, RTU A real,
  * AHU A Reactive, AHU B/RTU B Reactive, RTU A Reactive  
 */
@@ -47,15 +57,16 @@ uint8_t SAMPLE_RATE = 1; //Time in seconds between samples from WattNode [1:255]
 
 cCatenaModbusRtu host(0, A4); // this is host and RS-232 or USB-FTDI
 ModbusSerial<decltype(Serial1)> mySerial(&Serial1);
+RTCZero rtc; //Real time clock for polling once a second
 
 //Global Variables - user do not need to define.
-volatile uint8_t u8state = 0;
-queue_t *new_tail = new queue_t;
-volatile uint8_t querying_count=0;
-volatile uint8_t accumulate_count=0;
-volatile uint8_t queue_count=0;
-void connectionReset();
-uint8_t sample_rate = SAMPLE_RATE-1;
+volatile uint8_t u8state = 0; //FSM state
+queue_t *new_tail = new queue_t; //queue containing the payload to be sent
+volatile uint8_t querying_count=0; //count for number of telegrams need to query per second
+volatile uint8_t accumulate_count=0; //count for size of payload to send
+volatile uint8_t queue_count=0; //Length of the queue linked list
+void connectionReset(); //Resets connection if somehow disconnected 
+uint8_t sample_rate = SAMPLE_RATE-1; 
 
 static inline void powerOn(void)
 {
@@ -99,7 +110,7 @@ void loop() {
  
     switch(u8state){ 
           case 0:
-            wdt_enable();
+            wdt_enable(); //enable watchdog in case we get stuck in meter polling
             new_tail = new queue_t;
             new_tail->buffer.push_back(Connection_Num);
             new_tail->buffer.push_back(rtc.getMinutes());
@@ -180,8 +191,12 @@ void loop() {
 
 /**
  * @brief
- * Interrupt handler for alarm ring. Used by RTC.
- *  
+ * Interrupt handler for alarm ring. Used by RTC. Updates alarm
+ * This interrupt will trigger periodically set by SAMPLE_PERIOD
+ * The interrupt prompts the meter to query and poll all the telegrams
+ * through modbus. When the buffer has been filled (set by SAMPLE_PERIOD),
+ * then the interrupt pushes the buffer onto the queue to be sent and 
+ * prepares a new buffer.   
  * 
  */
 void alarmMatch()
@@ -211,10 +226,10 @@ void alarmMatch()
 
 /**
  * @brief
- * Resets connection when the radio becomes disconnected. This reruns the initalization code.
+ * Resets connection when the radio becomes disconnected. 
+ * This reruns the initalization code.
  * Will need to check if there is memory leakage.
  *  
- * 
  */
 void connectionReset(){
     rtc.disableAlarm();
