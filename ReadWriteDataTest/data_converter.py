@@ -50,10 +50,6 @@ while counter>0:
 		writer.writerow(package)
 	counter-=1
 	print("counter " + str(counter))
-	if(counter==ITERATIONS/2):
-		print("half way there")
-	if(counter==ITERATIONS/4):
-		print("3/4 way there")
 	
 print("DONE")	
         
