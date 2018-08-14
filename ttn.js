@@ -36,19 +36,20 @@ function Decoder(bytes, port) {
     
     for(var key in decoded){
       if(!(key=="_Connection Number"||key=="_Minutes"||key=="_Seconds")){
-        var sign = (converted[key]&0x8000)>>15;
-        var expo = (converted[key]&0x7c00)>>10;
+        var sign = (converted[key]&0x8000)>>>15;
+        var expo = (converted[key]&0x7c00)>>>10;
         var manti = converted[key]&0x3ff;
-        if(expo===0 && manti === 0){
+        if(expo == 0 && manti == 0){
           converted[key]=0;
+        }else if(expo==0x1F && manti == 0){
+          converted[key] = Infinity;
+        }else{
+          var e = expo-15;
+          var result = Math.pow(2,e);
+          result=result*(1+Math.pow(2,-10)*manti);
+          converted[key] = sign?-result:result;   
         }
-        var e = expo-15;
-        var result = Math.pow(2,e);
-        result=result*(1+Math.pow(2,-10)*manti);
-        converted[key] = sign?-result:result;      
       }
     }
-  
-  
     return converted;
   }

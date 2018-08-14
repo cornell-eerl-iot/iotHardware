@@ -38,7 +38,7 @@ osjob_t sendjob;
 
 uint8_t DATA_LENGTH=1; //length of data to be sent
 bool SEND_COMPLETE = true; //indicator used to tell us when sending data is done.
-bool JOINED = false; //inducator when we joined the network
+bool JOINED = false; //indicator when we joined the network
 bool FAILED = false; //connection lost
 uint8_t Connection_Num = 0; //number of reconnects 
 
@@ -125,7 +125,7 @@ void onEvent (ev_t ev) {
             
             // Disable link check validation (automatically enabled
             // during join, but because slow data rates change max TX
-      // size, we don't use it in this example.
+            // size, we don't use it in this example.
             LMIC_setLinkCheckMode(0);
             LMIC_setDrTxpow(DR_SF7,14);
             LMIC_selectSubBand(1);
@@ -213,12 +213,6 @@ void ttn_otaa_init(){
     //delay(5000);
     //while (! Serial);
     Serial.println(F("Initializing TTN-LoRa settings"));
-    #ifdef VCC_ENABLE
-    // For Pinoccio Scout boards
-    pinMode(VCC_ENABLE, OUTPUT);
-    digitalWrite(VCC_ENABLE, HIGH);
-    //delay(1000);
-    #endif
     // LMIC init
     os_init();
     // Reset the MAC state. Session and pending data transfers will be discarded.
@@ -245,51 +239,6 @@ void ttn_otaa_init(){
 
 /**
  * @brief
- * Converts 16-bit unsigned integer data representations from the modbus output
- * to 8-bit unsigned representations. The 16-bit array from modbus should 
- * have lower 2 bytes followed by the higher 2 bytes. The 8-bit output 
- * from this function will be high bytes to lower bytes. We assume that full 
- * registers are 32-bits or 4 bytes.
- * 
- * @param 16-bit array and its array length
- * @return the processed 8-bit array
- */
-uint8_t *u16_to_u8(uint16_t *aray, int array_size){
-    DATA_LENGTH = array_size*2;
-  uint8_t *out = new uint8_t[DATA_LENGTH];
-  uint8_t lowByte, highByte;
-  for(int i=0; i<array_size; i++){
-      lowByte = aray[i];
-      highByte = aray[i]>>8;
-      out[i*2] = highByte;
-      out[i*2+1] = lowByte;
-  }
-  return out;
-}
-
-/**
- * @brief
- * Converts 32-bit single precision floating point representation to 16-bit 
- * half precision floating point representation in order to reduce space used. 
- * 4bytes->2bytes
- * 
- * @param 32-bit array containing IEEE single precision floating point reps 
- * and its array length
- * @return the processed 16-bit array containing IEEE half precision floating 
- * point reps
- */
-uint16_t *f32_to_f16(uint16_t *aray, int array_size){
-    uint16_t *temp = new uint16_t[array_size/2];
-    for(int i = 0;i<array_size;i++){
-        uint32_t f = (aray[i])|(aray[++i]<<16);
-        uint16_t h = ((f>>16)&0x8000)|((((f&0x7f800000)-0x38000000)>>13)&0x7c00)|((f>>13)&0x03ff);
-        temp[(i-1)/2] = h;
-    }
-    return temp;
-}
-
-/**
- * @brief
  * Processes the data converting from 16-bit regs single precision float repr 
  * to 8bit regs half precision repr. Half precision floats loses precision and 
  * have a lower range. Soft limit is now at 65536.0. However, this is up to
@@ -307,7 +256,7 @@ void process_data(uint16_t *aray, int array_size, queue_t* queue){
         uint16_t sign; 
         uint16_t expo;
         uint16_t manti;
-        uint32_t f = (aray[++i]<<16)|(aray[i]);
+        uint32_t f = (aray[i])|(aray[++i]<<16); //lower byte then high byte
         int f32e = (f&0x7F800000)>>23;
         f32e-=127;
         

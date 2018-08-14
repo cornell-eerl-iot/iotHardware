@@ -14,24 +14,74 @@
 
  * 
 
+ * Do not try to write to registers using this file. It will break the program
+
  * 
 
  * Comment Updated 8/10/2018
 
 */
-# 13 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
-# 14 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino" 2
+# 14 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
 # 15 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino" 2
 # 16 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino" 2
 # 17 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino" 2
 # 18 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino" 2
 # 19 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino" 2
+# 20 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino" 2
 
 
 
 using namespace McciCatena;
 
 
+/** Initializing the modbus_t telegrams. There is an offset of 1
+
+ * for the addresses we put into the initializer. The addresses we 
+
+ * put into the telegram should be address on the manual minus 1. 
+
+ * REGS (with offset): Each reg is 16 bits (2 bytes)
+
+ * Reading Regs:
+
+ * Real Power A-C : 1010-1015
+
+ * Power Factor A-C : 1140-1145
+
+ * Reactive Power A-C : 1148-1153
+
+ * Apparant Power A-C : 1156-1161
+
+ * Config Regs:
+
+ * CT-AMPs A : 1603
+
+ * CT-AMPs B : 1604
+
+ * CT-AMPs C : 1605
+
+ * CT Directions : 1606
+
+ *      CT Direction codes:
+
+ *          - 0 : normnal
+
+ *          - 1 : flip A
+
+ * 			- 2 : flip B
+
+ * 			- 3 : flip A and B
+
+ * 			- 4 : flip C
+
+ * 			- 5 : flip A and C
+
+ * 			- 6 : flip B and C
+
+ * 			- 7 : flip all CT's
+
+*/
+# 50 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
 /**ASSUMPTION:
 
  * CT's for device 1 is 200A 
@@ -39,12 +89,12 @@ using namespace McciCatena;
  * CT's for device 2 is 100A
 
  */
-# 29 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
+# 54 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
 //User set variables
 static const modbus_t T1 = {1,3,1010,4,nullptr}; //using only the first 2 phases of device 1
 static const modbus_t T2 = {1,3,1148,4,nullptr};
-static const modbus_t T3 = {1,3,1010,6,nullptr}; //using all 3 phases for device 2
-static const modbus_t T4 = {1,3,1148,6,nullptr};
+static const modbus_t T3 = {2,3,1010,6,nullptr}; //using all 3 phases for device 2
+static const modbus_t T4 = {2,3,1148,6,nullptr};
 
 /**
 
@@ -59,7 +109,7 @@ static const modbus_t T4 = {1,3,1148,6,nullptr};
  * AHU A Reactive, AHU B/RTU B Reactive, RTU A Reactive  
 
 */
-# 42 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
+# 67 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
 static const modbus_t TELEGRAMS[] = {T1,T2,T3,T4}; //Order of transmitting
 
 
@@ -80,7 +130,7 @@ uint8_t SAMPLE_RATE = 1; //Time in seconds between samples from WattNode [1:255]
  *               or any pin number > 1 for RS-485
 
  */
-# 57 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
+# 82 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
 cCatenaModbusRtu host(0, A4); // this is host and RS-232 or USB-FTDI
 ModbusSerial<decltype(Serial1)> mySerial(&Serial1);
 RTCZero rtc; //Real time clock for polling once a second
@@ -178,7 +228,7 @@ void loop() {
                     Serial.print(new_tail->buffer[i],HEX);Serial.print(" ");
 
                   }Serial.println(" ");        */
-# 152 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
+# 177 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
                   u8state = (querying_count==0) ? u8state+1 : 1;
               }
             }
@@ -240,7 +290,7 @@ void loop() {
  * 
 
  */
-# 204 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
+# 229 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
 void alarmMatch()
 {
 
@@ -279,7 +329,7 @@ void alarmMatch()
  *  
 
  */
-# 236 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
+# 261 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
 void connectionReset(){
     rtc.disableAlarm();
     ttn_otaa_init();
