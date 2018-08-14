@@ -5,6 +5,7 @@
  * from WattNode meters using Modbus, processes the data, and then sends it 
  * over LoRa to TTN (or other server).
  * 
+ * Do not try to write to registers using this file. It will break the program
  * 
  * Comment Updated 8/10/2018
 */
@@ -22,6 +23,30 @@
 using namespace McciCatena;
 
 
+/** Initializing the modbus_t telegrams. There is an offset of 1
+ * for the addresses we put into the initializer. The addresses we 
+ * put into the telegram should be address on the manual minus 1. 
+ * REGS (with offset): Each reg is 16 bits (2 bytes)
+ * Reading Regs:
+ * Real Power A-C : 1010-1015
+ * Power Factor A-C : 1140-1145
+ * Reactive Power A-C : 1148-1153
+ * Apparant Power A-C : 1156-1161
+ * Config Regs:
+ * CT-AMPs A : 1603
+ * CT-AMPs B : 1604
+ * CT-AMPs C : 1605
+ * CT Directions : 1606
+ *      CT Direction codes:
+ *          - 0 : normnal
+ *          - 1 : flip A
+ * 			- 2 : flip B
+ * 			- 3 : flip A and B
+ * 			- 4 : flip C
+ * 			- 5 : flip A and C
+ * 			- 6 : flip B and C
+ * 			- 7 : flip all CT's
+*/ 
 /**ASSUMPTION:
  * CT's for device 1 is 200A 
  * CT's for device 2 is 100A
@@ -29,8 +54,8 @@ using namespace McciCatena;
 //User set variables
 static const modbus_t T1 = {1,3,1010,4,nullptr}; //using only the first 2 phases of device 1
 static const modbus_t T2 = {1,3,1148,4,nullptr};
-static const modbus_t T3 = {1,3,1010,6,nullptr}; //using all 3 phases for device 2
-static const modbus_t T4 = {1,3,1148,6,nullptr};
+static const modbus_t T3 = {2,3,1010,6,nullptr}; //using all 3 phases for device 2
+static const modbus_t T4 = {2,3,1148,6,nullptr};
 
 /**
  * Send order will be: 

@@ -34,8 +34,8 @@
 emacs.core
 
 # vs code files
-.vscode
-*~
+#.vscode
+#*~
 
 # visual micro files
 *.vcxitems

@@ -36,9 +36,9 @@ header = ["200-A-Real","200-B-Real","200-C-Real","200-A-Reactive","200-B-Reactiv
 "100-A-Real","100-B-Real","100-C-Real","100-A-Reactive","100-B-Reactive","100-C-Reactive"]
 header = ["Time"]+header
 writer.writerow(header)
-header = ["Refrigerator Real","Microwave-Real","Phone charger Real","Refrigerator Reactive","Microwave-Reactive",\
-"Phone charger Reactive","Dishwasher-Real","Disposal-Real","Laptop Charging-Real","Dishwasher-Reactive","Disposal-Reactive",\
-"Laptop Charging -Reactive"]
+header = ["Grid Power-A-Real","Grid Power-B-Real","N/A","Grid Power-A-Reactive","Grid Power-B-Reactive",\
+"N/A","AHU-A-Real","AHU/RTU-B-Real","RTU-A-Real","AHU-A-Reactive","AHU/RTU-B-Reactive",\
+"RTU-Reactive"]
 header = ["Time"]+header
 writer.writerow(header)
 
