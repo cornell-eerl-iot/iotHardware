@@ -105,7 +105,7 @@ void setup() {
   Serial.println("Starting setup");
   powerOn();  
   host.begin(&mySerial, 19200); // baud-rate at 19200
-  host.setTimeOut( 2000 ); // if there is no answer in 2000 ms, roll over
+  host.setTimeOut( 500 ); // if there is no answer in 2000 ms, roll over
   host.setTxEnableDelay(100);
 
   for(int i = 0; i < sizeof(TELEGRAMS)/sizeof(TELEGRAMS[0]);i++){
