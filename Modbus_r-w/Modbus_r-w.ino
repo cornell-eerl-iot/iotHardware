@@ -16,6 +16,11 @@ using namespace McciCatena;
 
 Catena gCatena;
 
+/**
+ * KEY:
+ * 
+ * */
+
 uint16_t writeData[] = {5,200,5}; //Setting CT configurations
 uint16_t writeData2[] = {100,100,100};
 uint16_t writeData3[] = {3}; //Setting CT directions
