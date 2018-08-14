@@ -176,7 +176,7 @@ void loop() {
               delete head;
             }
           u8state++;
-          rtc.enableAlarm(rtc.MATCH_SS); 
+          //rtc.enableAlarm(rtc.MATCH_SS); 
           break;
           
           case 6:
@@ -201,7 +201,7 @@ void loop() {
  */
 void alarmMatch()
 {
-  rtc.disableAlarm();
+  //rtc.disableAlarm();
   if(accumulate_count == 0xFF){
     if(SEND_COMPLETE)
       u8state = 0;
