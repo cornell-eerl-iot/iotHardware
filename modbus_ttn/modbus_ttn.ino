@@ -16,7 +16,6 @@
 #include <RTCZero.h>
 #include <algorithm>
 #include <utility>
-#include "wdt.h"
 
 #define kPowerOn        A3
 
@@ -30,8 +29,8 @@ using namespace McciCatena;
 //User set variables
 static const modbus_t T1 = {1,3,1010,4,nullptr}; //using only the first 2 phases of device 1
 static const modbus_t T2 = {1,3,1148,4,nullptr};
-static const modbus_t T3 = {2,3,1010,6,nullptr}; //using all 3 phases for device 2
-static const modbus_t T4 = {2,3,1148,6,nullptr};
+static const modbus_t T3 = {1,3,1010,6,nullptr}; //using all 3 phases for device 2
+static const modbus_t T4 = {1,3,1148,6,nullptr};
 
 /**
  * Send order will be: 
@@ -90,7 +89,7 @@ void setup() {
   ttn_otaa_init();
 
   rtc.begin();
-  rtc.setAlarmSeconds(10);             
+  rtc.setAlarmSeconds(5);             
   rtc.attachInterrupt(alarmMatch);
   rtc.setMinutes(0);
   rtc.setSeconds(0);
@@ -110,7 +109,7 @@ void loop() {
  
     switch(u8state){ 
           case 0:
-            wdt_enable(); //enable watchdog in case we get stuck in meter polling
+            rtc.disableAlarm();
             new_tail = new queue_t;
             new_tail->buffer.push_back(Connection_Num);
             new_tail->buffer.push_back(rtc.getMinutes());
@@ -138,15 +137,19 @@ void loop() {
               if (host.getLastError() != ERR_SUCCESS) {
                 Serial.print("Error ");
                 Serial.println(int(lastError));
+                delete new_tail;
+                u8state = 0;
+                querying_count = host.getTelegramSize();
+                int t = rtc.getSeconds()+sample_rate;
+                if(t>=60) t-=60;
+                rtc.setAlarmSeconds(t);
               } else {
                 
                   process_data(host.getContainer(),host.getContainerCurrSize(),new_tail);  
                   /*for(int i = 0; i<new_tail->buffer.size();i++){
                     Serial.print(new_tail->buffer[i],HEX);Serial.print(" ");
-                  }Serial.println(" "); */        
-                  u8state = (querying_count==0) ? u8state+1 : 1;
-                
-                
+                  }Serial.println(" ");        */ 
+                  u8state = (querying_count==0) ? u8state+1 : 1; 
               }
             }
             
@@ -176,16 +179,15 @@ void loop() {
               delete head;
             }
           u8state++;
-          //rtc.enableAlarm(rtc.MATCH_SS); 
+          rtc.enableAlarm(rtc.MATCH_SS); 
           break;
           
           case 6:
             os_runloop_once(); 
-            wdt_disable();  
             if(FAILED){
               connectionReset(); 
             }
-          break;
+            break;
     }
 };
 
@@ -201,7 +203,7 @@ void loop() {
  */
 void alarmMatch()
 {
-  //rtc.disableAlarm();
+  
   if(accumulate_count == 0xFF){
     if(SEND_COMPLETE)
       u8state = 0;

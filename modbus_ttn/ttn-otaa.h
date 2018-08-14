@@ -190,12 +190,13 @@ void onEvent (ev_t ev) {
         default:
             Serial.print(F("Unknown event: "));
             Serial.println((unsigned) ev);
-            FAILED - true;
+            FAILED = true;
             break;
     }
 }
 
 void do_send(osjob_t* j){
+    Serial.println("do_send");
     // Check if there is not a current TX/RX job running
     if (LMIC.opmode & OP_TXRXPEND) {
         Serial.println(F("OP_TXRXPEND, not sending"));
@@ -210,7 +211,7 @@ void do_send(osjob_t* j){
 void ttn_otaa_init(){
     //delay(5000);
     //while (! Serial);
-    //Serial.println(F("Initializing TTN-LoRa settings"));
+    Serial.println(F("Initializing TTN-LoRa settings"));
     #ifdef VCC_ENABLE
     // For Pinoccio Scout boards
     pinMode(VCC_ENABLE, OUTPUT);
