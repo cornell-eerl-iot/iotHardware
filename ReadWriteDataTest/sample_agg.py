@@ -15,10 +15,10 @@ import datetime
 file = open('Template1.csv', 'w', newline='')
 writer = csv.writer(file,delimiter = ',')
 
-ITERATIONS = 1800 #Choose time
+ITERATIONS = 3600 #Choose time
 
 ser = serial.Serial(
-    port='COM6', #Will need to adjust depending on USB port / OS
+    port='COM7', #Will need to adjust depending on USB port / OS
     baudrate=19200,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,

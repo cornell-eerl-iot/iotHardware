@@ -140,6 +140,7 @@ void loop() {
             new_tail->buffer.push_back(rtc.getMinutes());
             new_tail->buffer.push_back(rtc.getSeconds());
             accumulate_count = SAMPLE_PERIOD-1; //Reset global variable
+            host.setQueryCount(-1);
             u8state++;
             break;
 
@@ -162,20 +163,15 @@ void loop() {
               if (host.getLastError() != ERR_SUCCESS) {
                 Serial.print("Error ");
                 Serial.println(int(lastError));
-                delete new_tail;
-                u8state = 0;
-                querying_count = host.getTelegramSize();
-                int t = rtc.getSeconds()+sample_rate;
-                if(t>=60) t-=60;
-                rtc.setAlarmSeconds(t);
+
               } else {
-                
                   process_data(host.getContainer(),host.getContainerCurrSize(),new_tail);  
                   /*for(int i = 0; i<new_tail->buffer.size();i++){
                     Serial.print(new_tail->buffer[i],HEX);Serial.print(" ");
                   }Serial.println(" ");        */ 
-                  u8state = (querying_count==0) ? u8state+1 : 1; 
+                  
               }
+              u8state = (querying_count==0) ? u8state+1 : 1; 
             }
             
             break;
@@ -190,6 +186,8 @@ void loop() {
             u8state++;
           break;
           case 5:
+            {
+            
             if(SEND_COMPLETE && queue){
               delete[] mydata;
               queue_t* head = pop_front_queue();
@@ -203,10 +201,13 @@ void loop() {
               Serial.print(" --- Queue count: ");Serial.println(queue_count);
               delete head;
             }
-          u8state++;
-          rtc.enableAlarm(rtc.MATCH_SS); 
-          break;
-          
+            u8state++;
+            uint8_t tim = rtc.getSeconds()+sample_rate;
+            if(tim>=60) tim-=60;
+            rtc.setAlarmSeconds(tim);
+            rtc.enableAlarm(rtc.MATCH_SS); 
+            }
+          break;  
           case 6:
             os_runloop_once(); 
             if(FAILED){
@@ -244,9 +245,9 @@ void alarmMatch()
   accumulate_count--;
   u32wait = millis()+10;
   querying_count = host.getTelegramSize();
-  int t = rtc.getSeconds()+sample_rate;
-  if(t>=60) t-=60;
-  rtc.setAlarmSeconds(t);
+uint8_t t = rtc.getSeconds()+sample_rate;
+          if(t>=60) t-=60;
+          rtc.setAlarmSeconds(t);
   Serial.print(rtc.getMinutes());Serial.print(":");Serial.println(rtc.getSeconds());
 }
 

@@ -157,7 +157,7 @@ void setup() {
   Serial.println("Starting setup");
   powerOn();
   host.begin(&mySerial, 19200); // baud-rate at 19200
-  host.setTimeOut( 2000 ); // if there is no answer in 2000 ms, roll over
+  host.setTimeOut( 500 ); // if there is no answer in 2000 ms, roll over
   host.setTxEnableDelay(100);
 
   for(int i = 0; i < sizeof(TELEGRAMS)/sizeof(TELEGRAMS[0]);i++){
@@ -192,6 +192,7 @@ void loop() {
             new_tail->buffer.push_back(rtc.getMinutes());
             new_tail->buffer.push_back(rtc.getSeconds());
             accumulate_count = SAMPLE_PERIOD-1; //Reset global variable
+            host.setQueryCount(-1);
             u8state++;
             break;
 
@@ -214,23 +215,17 @@ void loop() {
               if (host.getLastError() != ERR_SUCCESS) {
                 Serial.print("Error ");
                 Serial.println(int(lastError));
-                delete new_tail;
-                u8state = 0;
-                querying_count = host.getTelegramSize();
-                int t = rtc.getSeconds()+sample_rate;
-                if(t>=60) t-=60;
-                rtc.setAlarmSeconds(t);
-              } else {
 
+              } else {
                   process_data(host.getContainer(),host.getContainerCurrSize(),new_tail);
                   /*for(int i = 0; i<new_tail->buffer.size();i++){
 
                     Serial.print(new_tail->buffer[i],HEX);Serial.print(" ");
 
                   }Serial.println(" ");        */
-# 177 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
-                  u8state = (querying_count==0) ? u8state+1 : 1;
+# 173 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
               }
+              u8state = (querying_count==0) ? u8state+1 : 1;
             }
 
             break;
@@ -245,6 +240,8 @@ void loop() {
             u8state++;
           break;
           case 5:
+            {
+
             if(SEND_COMPLETE && queue){
               delete[] mydata;
               queue_t* head = pop_front_queue();
@@ -258,10 +255,13 @@ void loop() {
               Serial.print(" --- Queue count: ");Serial.println(queue_count);
               delete head;
             }
-          u8state++;
-          rtc.enableAlarm(rtc.MATCH_SS);
+            u8state++;
+            uint8_t tim = rtc.getSeconds()+sample_rate;
+            if(tim>=60) tim-=60;
+            rtc.setAlarmSeconds(tim);
+            rtc.enableAlarm(rtc.MATCH_SS);
+            }
           break;
-
           case 6:
             os_runloop_once();
             if(FAILED){
@@ -290,7 +290,7 @@ void loop() {
  * 
 
  */
-# 229 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
+# 230 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
 void alarmMatch()
 {
 
@@ -309,9 +309,9 @@ void alarmMatch()
   accumulate_count--;
   u32wait = millis()+10;
   querying_count = host.getTelegramSize();
-  int t = rtc.getSeconds()+sample_rate;
-  if(t>=60) t-=60;
-  rtc.setAlarmSeconds(t);
+uint8_t t = rtc.getSeconds()+sample_rate;
+          if(t>=60) t-=60;
+          rtc.setAlarmSeconds(t);
   Serial.print(rtc.getMinutes());Serial.print(":");Serial.println(rtc.getSeconds());
 }
 
@@ -329,7 +329,7 @@ void alarmMatch()
  *  
 
  */
-# 261 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
+# 262 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
 void connectionReset(){
     rtc.disableAlarm();
     ttn_otaa_init();

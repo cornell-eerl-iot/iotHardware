@@ -41,7 +41,7 @@ Catena gCatena;
  * 			- 7 : flip all CT's
 */ 
 
-uint16_t writeData[] = {200,200,200}; //Setting CT configurations for device 1
+uint16_t writeData[] = {200,200,5}; //Setting CT configurations for device 1
 uint16_t writeData2[] = {100,100,100}; //Setting CT configs for device 2
 uint16_t writeData3[] = {7}; //Setting CT directions for device 1
 uint16_t writeData4[] = {7}; //Setting CT directions for device 2
@@ -64,7 +64,8 @@ static const modbus_t T4 = {2,3,1148,6,nullptr}; //Reading device 2 reactive pow
 */
 
 //static const modbus_t TELEGRAMS[] = {T5,T1,T2}; 
-static const modbus_t TELEGRAMS[] = {T5,T6,T7,T8,T1,T2,T3,T4}; 
+//static const modbus_t TELEGRAMS[] = {T5,T6,T7,T8,T1,T2,T3,T4}; 
+static const modbus_t TELEGRAMS[] = {T1,T2,T3,T4}; 
 
 
 /**
@@ -129,7 +130,7 @@ void loop() {
        ? millis() + 900 : millis() + 10;
 
       if (host.getLastError() != ERR_SUCCESS) {
-  		  Serial.print("Error ");
+  		  Serial.print("Error "); 
   		  Serial.print(int(lastError));
       } else {
         if(write_empty){

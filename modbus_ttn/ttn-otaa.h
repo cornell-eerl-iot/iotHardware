@@ -197,7 +197,7 @@ void onEvent (ev_t ev) {
 }
 
 void do_send(osjob_t* j){
-    Serial.println("do_send");
+    //Serial.println("do_send");
     // Check if there is not a current TX/RX job running
     if (LMIC.opmode & OP_TXRXPEND) {
         Serial.println(F("OP_TXRXPEND, not sending"));
