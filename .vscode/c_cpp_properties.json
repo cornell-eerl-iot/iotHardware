@@ -3,7 +3,8 @@
         {
             "name": "Win32",
             "includePath": [
-                "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.2.1\\**"
+                "C:\\Users\\xiaoy\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\samd\\1.2.1\\**",
+                "C:/Users/xiaoy/Documents/Arduino/libraries/Catena-Arduino-Platform/src"
             ],
             "intelliSenseMode": "msvc-x64",
             "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.14.26428/bin/Hostx64/x64/cl.exe",

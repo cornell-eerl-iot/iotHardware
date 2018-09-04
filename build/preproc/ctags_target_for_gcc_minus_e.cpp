@@ -1,338 +1,297 @@
-# 1 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
-# 1 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
-/**
+# 1 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\ttn-otaa\\ttn-otaa.ino"
+# 1 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\ttn-otaa\\ttn-otaa.ino"
+/*******************************************************************************
 
- * This is a modification of the simple_host example of the Modbus 
+ * Copyright (c) 2015 Thomas Telkamp and Matthijs Kooijman
 
- * for Arduino library from MCCI.
+ * Copyright (c) 2018 Terry Moore, MCCI
 
- * This sketch uses a combination of interrupts and headers to poll data
+ *
 
- * from WattNode meters using Modbus, processes the data, and then sends it 
+ * Permission is hereby granted, free of charge, to anyone
 
- * over LoRa to TTN (or other server).
+ * obtaining a copy of this document and accompanying files,
 
- * 
+ * to do whatever they want with them without any restriction,
 
- * Do not try to write to registers using this file. It will break the program
+ * including, but not limited to, copying, modification and redistribution.
 
- * 
+ * NO WARRANTY OF ANY KIND IS PROVIDED.
 
- * Comment Updated 8/10/2018
+ *
 
-*/
-# 14 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
-# 15 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino" 2
-# 16 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino" 2
-# 17 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino" 2
-# 18 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino" 2
-# 19 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino" 2
-# 20 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino" 2
+ * This example sends a valid LoRaWAN packet with payload "Hello,
 
+ * world!", using frequency and encryption settings matching those of
 
+ * the The Things Network. It's pre-configured for the Adafruit
 
-using namespace McciCatena;
+ * Feather M0 LoRa.
 
+ *
 
-/** Initializing the modbus_t telegrams. There is an offset of 1
+ * This uses OTAA (Over-the-air activation), where where a DevEUI and
 
- * for the addresses we put into the initializer. The addresses we 
+ * application key is configured, which are used in an over-the-air
 
- * put into the telegram should be address on the manual minus 1. 
+ * activation procedure where a DevAddr and session keys are
 
- * REGS (with offset): Each reg is 16 bits (2 bytes)
+ * assigned/generated for use with all further communication.
 
- * Reading Regs:
+ *
 
- * Real Power A-C : 1010-1015
+ * Note: LoRaWAN per sub-band duty-cycle limitation is enforced (1% in
 
- * Power Factor A-C : 1140-1145
+ * g1, 0.1% in g2), but not the TTN fair usage policy (which is probably
 
- * Reactive Power A-C : 1148-1153
+ * violated by this sketch when left running for longer)!
 
- * Apparant Power A-C : 1156-1161
 
- * Config Regs:
 
- * CT-AMPs A : 1603
+ * To use this sketch, first register your application and device with
 
- * CT-AMPs B : 1604
+ * the things network, to set or generate an AppEUI, DevEUI and AppKey.
 
- * CT-AMPs C : 1605
+ * Multiple devices can use the same AppEUI, but each device has its own
 
- * CT Directions : 1606
+ * DevEUI and AppKey.
 
- *      CT Direction codes:
+ *
 
- *          - 0 : normnal
+ * Do not forget to define the radio type correctly in config.h.
 
- *          - 1 : flip A
+ *
 
- * 			- 2 : flip B
+ *******************************************************************************/
+# 34 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\ttn-otaa\\ttn-otaa.ino"
+# 35 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\ttn-otaa\\ttn-otaa.ino" 2
+# 36 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\ttn-otaa\\ttn-otaa.ino" 2
+# 37 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\ttn-otaa\\ttn-otaa.ino" 2
+//
+// For normal use, we require that you edit the sketch to replace FILLMEIN
+// with values assigned by the TTN console. However, for regression tests,
+// we want to be able to compile these scripts. The regression tests define
+// COMPILE_REGRESSION_TEST, and in that case we define FILLMEIN to a non-
+// working but innocuous value.
+//
 
- * 			- 3 : flip A and B
 
- * 			- 4 : flip C
 
- * 			- 5 : flip A and C
 
- * 			- 6 : flip B and C
 
- * 			- 7 : flip all CT's
 
-*/
-# 50 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
-/**ASSUMPTION:
 
- * CT's for device 1 is 200A 
+// This EUI must be in little-endian format, so least-significant-byte
+// first. When copying an EUI from ttnctl output, this means to reverse
+// the bytes. For TTN issued EUIs the last bytes should be 0xD5, 0xB3,
+// 0x70.
+static const u1_t APPEUI[8]= { 0x20, 0xFB, 0x00, 0xD0, 0x7E, 0xD5, 0xB3, 0x70 };
+//rasp { 0x20, 0xFB, 0x00, 0xD0, 0x7E, 0xD5, 0xB3, 0x70 };
+// emeter { 0x11, 0x15, 0x01, 0xD0, 0x7E, 0xD5, 0xB3, 0x70 };
+//0xEC, 0xEE, 0x00, 0xD0, 0x7E, 0xD5, 0xB3, 0x70 };
+void os_getArtEui (u1_t* buf) { memcpy((buf), (APPEUI), (8));}
 
- * CT's for device 2 is 100A
+// This should also be in little endian format, see above.
+static const u1_t DEVEUI[8]= { 0x93, 0x2B, 0xF5, 0x93, 0x9B, 0xAF, 0x60, 0x00 };
+//emeter { 0x43, 0xE0, 0xBF, 0xE5, 0x02, 0x54, 0x54, 0x00 };
+//rasp { 0x93, 0x2B, 0xF5, 0x93, 0x9B, 0xAF, 0x60, 0x00 };
+//0x53, 0x01, 0x00, 0x00, 0x01, 0xCC, 0x02, 0x00 };
+void os_getDevEui (u1_t* buf) { memcpy((buf), (DEVEUI), (8));}
 
- */
-# 54 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
-//User set variables
-static const modbus_t T1 = {1,3,1010,4,nullptr}; //using only the first 2 phases of device 1
-static const modbus_t T2 = {1,3,1148,4,nullptr};
-static const modbus_t T3 = {2,3,1010,6,nullptr}; //using all 3 phases for device 2
-static const modbus_t T4 = {2,3,1148,6,nullptr};
-
-/**
-
- * Send order will be: 
-
- * Grid Power A real, Grid Power B real, 
-
- * Grid Power A Reactive, Grid Power B Reactive, 
-
- * AHU A real, AHU B/RTU B real, RTU A real,
-
- * AHU A Reactive, AHU B/RTU B Reactive, RTU A Reactive  
-
-*/
-# 67 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
-static const modbus_t TELEGRAMS[] = {T1,T2,T3,T4}; //Order of transmitting
-
-
-uint8_t SAMPLE_PERIOD = 5; //Number of samples to collect before sending over LoRa.
-uint8_t SAMPLE_RATE = 1; //Time in seconds between samples from WattNode [1:255]
-
-
-/**
-
- *  Modbus object declaration
-
- *  u8id : node id = 0 for host, = 1..247 for device
-
- *  u8serno : serial port (use 0 for Serial)
-
- *  u8txenpin : 0 for RS-232 and USB-FTDI 
-
- *               or any pin number > 1 for RS-485
-
- */
-# 82 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
-cCatenaModbusRtu host(0, A4); // this is host and RS-232 or USB-FTDI
-ModbusSerial<decltype(Serial1)> mySerial(&Serial1);
-RTCZero rtc; //Real time clock for polling once a second
-
-//Global Variables - user do not need to define.
-volatile uint8_t u8state = 0; //FSM state
-queue_t *new_tail = new queue_t; //queue containing the payload to be sent
-volatile uint8_t querying_count=0; //count for number of telegrams need to query per second
-volatile uint8_t accumulate_count=0; //count for size of payload to send
-volatile uint8_t queue_count=0; //Length of the queue linked list
-void connectionReset(); //Resets connection if somehow disconnected 
-uint8_t sample_rate = SAMPLE_RATE-1;
-
-static inline void powerOn(void)
-{
-    pinMode(A3, (0x1));
-    digitalWrite(A3, (0x1));
-}
-
-
-volatile unsigned long u32wait = 0;
-
-void setup() {
-  Serial.println("Starting setup");
-  powerOn();
-  host.begin(&mySerial, 19200); // baud-rate at 19200
-  host.setTimeOut( 500 ); // if there is no answer in 2000 ms, roll over
-  host.setTxEnableDelay(100);
-
-  for(int i = 0; i < sizeof(TELEGRAMS)/sizeof(TELEGRAMS[0]);i++){
-    host.add_telegram(TELEGRAMS[i]);
-  }
-  ttn_otaa_init();
-
-  rtc.begin();
-  rtc.setAlarmSeconds(5);
-  rtc.attachInterrupt(alarmMatch);
-  rtc.setMinutes(0);
-  rtc.setSeconds(0);
-
-  u8state = 6; //Start at sending stage so that we can send the initial package
-  querying_count = host.getTelegramSize(); //
-  //number of samples collected before we send over LoRa
-  accumulate_count = 0xFF;//initialized to max as indicator that we are starting
-  Serial.println("past setup()");
-  rtc.enableAlarm(rtc.MATCH_SS);
-
-}
-
-//have alarm be a setting where the alarm will trigger that it is time to sample again.
-
-void loop() {
-
-    switch(u8state){
-          case 0:
-            rtc.disableAlarm();
-            new_tail = new queue_t;
-            new_tail->buffer.push_back(Connection_Num);
-            new_tail->buffer.push_back(rtc.getMinutes());
-            new_tail->buffer.push_back(rtc.getSeconds());
-            accumulate_count = SAMPLE_PERIOD-1; //Reset global variable
-            host.setQueryCount(-1);
-            u8state++;
+// This key should be in big endian format (or, since it is not really a
+// number but a block of memory, endianness does not really apply). In
+// practice, a key taken from the TTN console can be copied as-is.
+static const u1_t APPKEY[16] = { 0x21, 0xC8, 0x39, 0x66, 0x22, 0xEE, 0xF3, 0xDA, 0xAE, 0x2A, 0x92, 0x89, 0x82, 0x51, 0xD8, 0x29 };
+//rasp { 0x21, 0xC8, 0x39, 0x66, 0x22, 0xEE, 0xF3, 0xDA, 0xAE, 0x2A, 0x92, 0x89, 0x82, 0x51, 0xD8, 0x29 };
+// emeter { 0x7E, 0x07, 0x88, 0xAE, 0x2E, 0x2E, 0xED, 0xAA, 0x11, 0xAB, 0x6F, 0x61, 0x16, 0x2D, 0x51, 0x98 };//0xA2, 0x0E, 0x07, 0x34, 0x6E, 0x98, 0x71, 0xE0, 0x6C, 0x71, 0x98, 0x62, 0x53, 0x1A, 0xD4, 0xA3 };
+void os_getDevKey (u1_t* buf) { memcpy((buf), (APPKEY), (16));}
+
+uint8_t mydata[103];
+
+
+static osjob_t sendjob;
+
+// Schedule TX every this many seconds (might become longer due to duty
+// cycle limitations).
+const unsigned TX_INTERVAL = 1;
+
+// Pin mapping
+
+// Pin mapping for Adafruit Feather M0 LoRa, etc.
+const lmic_pinmap lmic_pins = {
+    .nss = 8,
+    .rxtx = LMIC_UNUSED_PIN,
+    .rst = 4,
+    .dio = {3, 6, LMIC_UNUSED_PIN},
+    .rxtx_rx_active = 0,
+    .rssi_cal = 8, // LBT cal for the Adafruit Feather M0 LoRa, in dB
+    .spi_freq = 8000000,
+};
+# 115 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\ttn-otaa\\ttn-otaa.ino"
+void onEvent (ev_t ev) {
+    Serial.print(os_getTime());
+    Serial.print(": ");
+    switch(ev) {
+        case EV_SCAN_TIMEOUT:
+            Serial.println((reinterpret_cast<const __FlashStringHelper *>(("EV_SCAN_TIMEOUT"))));
             break;
-
-          case 1:
-            if (long(millis() - u32wait) > 0) u8state++; // wait state
+        case EV_BEACON_FOUND:
+            Serial.println((reinterpret_cast<const __FlashStringHelper *>(("EV_BEACON_FOUND"))));
             break;
-
-          case 2:
-            host.setLastError(ERR_SUCCESS);
-            host.query(); // send query (only once)
-            u8state++;
-            querying_count --;
+        case EV_BEACON_MISSED:
+            Serial.println((reinterpret_cast<const __FlashStringHelper *>(("EV_BEACON_MISSED"))));
             break;
-
-          case 3:
-            host.poll(); // check incoming messages
-            if (host.getState() == COM_IDLE) {
-              ERR_LIST lastError = host.getLastError();
-              u32wait = millis()+10;
-              if (host.getLastError() != ERR_SUCCESS) {
-                Serial.print("Error ");
-                Serial.println(int(lastError));
-
-              } else {
-                  process_data(host.getContainer(),host.getContainerCurrSize(),new_tail);
-                  /*for(int i = 0; i<new_tail->buffer.size();i++){
-
-                    Serial.print(new_tail->buffer[i],HEX);Serial.print(" ");
-
-                  }Serial.println(" ");        */
-# 173 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
-              }
-              u8state = (querying_count==0) ? u8state+1 : 1;
-            }
-
+        case EV_BEACON_TRACKED:
+            Serial.println((reinterpret_cast<const __FlashStringHelper *>(("EV_BEACON_TRACKED"))));
             break;
-          case 4:
-            if(queue_count>2){
-              for(int i =0;i<2;i++){
-                queue_t * head = pop_front_queue();
-                queue_count--;
-                delete head;
-              }
-            }
-            u8state++;
-          break;
-          case 5:
+        case EV_JOINING:
+            Serial.println((reinterpret_cast<const __FlashStringHelper *>(("EV_JOINING"))));
+            break;
+        case EV_JOINED:
+            Serial.println((reinterpret_cast<const __FlashStringHelper *>(("EV_JOINED"))));
             {
+              u4_t netid = 0;
+              devaddr_t devaddr = 0;
+              u1_t nwkKey[16];
+              u1_t artKey[16];
+              LMIC_getSessionKeys(&netid, &devaddr, nwkKey, artKey);
+              Serial.print("netid: ");
+              Serial.println(netid, 10);
+              Serial.print("devaddr: ");
+              Serial.println(devaddr, 16);
+              Serial.print("artKey: ");
+              for (int i=0; i<sizeof(artKey); ++i) {
+                if (i != 0)
+                  Serial.print("-");
+                Serial.print(artKey[i], 16);
+              }
+              Serial.println("");
+              Serial.print("nwkKey: ");
+              for (int i=0; i<sizeof(nwkKey); ++i) {
+                      if (i != 0)
+                              Serial.print("-");
+                      Serial.print(nwkKey[i], 16);
+              }
+              Serial.println("");
+            }
+            // Disable link check validation (automatically enabled
+            // during join, but because slow data rates change max TX
+      // size, we don't use it in this example.
+            LMIC_setLinkCheckMode(0);
+            LMIC_setDrTxpow(DR_SF7,14);
+            LMIC_selectSubBand(1);
+            break;
+        /*
 
-            if(SEND_COMPLETE && queue){
-              delete[] mydata;
-              queue_t* head = pop_front_queue();
-              queue_count--;
-              DATA_LENGTH = head->buffer.size();
-              mydata = new uint8_t[DATA_LENGTH];
-              std::copy ( head->buffer.begin(), head->buffer.end(), mydata );
-              do_send(&sendjob);
+        || This event is defined but not used in the code. No
 
-              Serial.print("Sending.."); Serial.print(DATA_LENGTH);
-              Serial.print(" --- Queue count: ");Serial.println(queue_count);
-              delete head;
+        || point in wasting codespace on it.
+
+        ||
+
+        || case EV_RFU1:
+
+        ||     Serial.println(F("EV_RFU1"));
+
+        ||     break;
+
+        */
+# 176 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\ttn-otaa\\ttn-otaa.ino"
+        case EV_JOIN_FAILED:
+            Serial.println((reinterpret_cast<const __FlashStringHelper *>(("EV_JOIN_FAILED"))));
+            break;
+        case EV_REJOIN_FAILED:
+            Serial.println((reinterpret_cast<const __FlashStringHelper *>(("EV_REJOIN_FAILED"))));
+            break;
+            break;
+        case EV_TXCOMPLETE:
+            Serial.println((reinterpret_cast<const __FlashStringHelper *>(("EV_TXCOMPLETE (includes waiting for RX windows)"))));
+            if (LMIC.txrxFlags & TXRX_ACK)
+              Serial.println((reinterpret_cast<const __FlashStringHelper *>(("Received ack"))));
+            if (LMIC.dataLen) {
+              Serial.println((reinterpret_cast<const __FlashStringHelper *>(("Received "))));
+              Serial.println(LMIC.dataLen);
+              Serial.println((reinterpret_cast<const __FlashStringHelper *>((" bytes of payload"))));
             }
-            u8state++;
-            uint8_t tim = rtc.getSeconds()+sample_rate;
-            if(tim>=60) tim-=60;
-            rtc.setAlarmSeconds(tim);
-            rtc.enableAlarm(rtc.MATCH_SS);
-            }
-          break;
-          case 6:
-            os_runloop_once();
-            if(FAILED){
-              connectionReset();
-            }
+            // Schedule next transmission
+            os_setTimedCallback(&sendjob, os_getTime()+((ostime_t)( (int64_t)(TX_INTERVAL) * (1000000 / (1 << 4)))), do_send);
+            break;
+        case EV_LOST_TSYNC:
+            Serial.println((reinterpret_cast<const __FlashStringHelper *>(("EV_LOST_TSYNC"))));
+            break;
+        case EV_RESET:
+            Serial.println((reinterpret_cast<const __FlashStringHelper *>(("EV_RESET"))));
+            break;
+        case EV_RXCOMPLETE:
+            // data received in ping slot
+            Serial.println((reinterpret_cast<const __FlashStringHelper *>(("EV_RXCOMPLETE"))));
+            break;
+        case EV_LINK_DEAD:
+            Serial.println((reinterpret_cast<const __FlashStringHelper *>(("EV_LINK_DEAD"))));
+            break;
+        case EV_LINK_ALIVE:
+            Serial.println((reinterpret_cast<const __FlashStringHelper *>(("EV_LINK_ALIVE"))));
+            break;
+        /*
+
+        || This event is defined but not used in the code. No
+
+        || point in wasting codespace on it.
+
+        ||
+
+        || case EV_SCAN_FOUND:
+
+        ||    Serial.println(F("EV_SCAN_FOUND"));
+
+        ||    break;
+
+        */
+# 219 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\ttn-otaa\\ttn-otaa.ino"
+        case EV_TXSTART:
+            Serial.println((reinterpret_cast<const __FlashStringHelper *>(("EV_TXSTART"))));
+            break;
+        default:
+            Serial.print((reinterpret_cast<const __FlashStringHelper *>(("Unknown event: "))));
+            Serial.println((unsigned) ev);
             break;
     }
-};
-
-/**
-
- * @brief
-
- * Interrupt handler for alarm ring. Used by RTC. Updates alarm
-
- * This interrupt will trigger periodically set by SAMPLE_PERIOD
-
- * The interrupt prompts the meter to query and poll all the telegrams
-
- * through modbus. When the buffer has been filled (set by SAMPLE_PERIOD),
-
- * then the interrupt pushes the buffer onto the queue to be sent and 
-
- * prepares a new buffer.   
-
- * 
-
- */
-# 230 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
-void alarmMatch()
-{
-
-  if(accumulate_count == 0xFF){
-    if(SEND_COMPLETE)
-      u8state = 0;
-  }else if(accumulate_count == 0){
-    //Assuming that new_tail is already created.
-    queue_count++;
-    push_tail(new_tail);
-    Serial.print("Pushing tail, Queue count: "); Serial.println(queue_count);
-    u8state = 0;
-  }else{
-    u8state = 1;
-  }
-  accumulate_count--;
-  u32wait = millis()+10;
-  querying_count = host.getTelegramSize();
-uint8_t t = rtc.getSeconds()+sample_rate;
-          if(t>=60) t-=60;
-          rtc.setAlarmSeconds(t);
-  Serial.print(rtc.getMinutes());Serial.print(":");Serial.println(rtc.getSeconds());
 }
 
+void do_send(osjob_t* j){
+    // Check if there is not a current TX/RX job running
+    if (LMIC.opmode & OP_TXRXPEND) {
+        Serial.println((reinterpret_cast<const __FlashStringHelper *>(("OP_TXRXPEND, not sending"))));
+    } else {
+        // Prepare upstream data transmission at the next possible time.
+        LMIC_setTxData2(1, mydata, sizeof(mydata), 0);
+        Serial.println((reinterpret_cast<const __FlashStringHelper *>(("Packet queued"))));
+    }
+    // Next TX is scheduled after TX_COMPLETE event.
+}
 
-/**
+void setup() {
+    delay(5000);
+    while (! Serial)
+        ;
+    Serial.begin(9600);
+    Serial.println((reinterpret_cast<const __FlashStringHelper *>(("Starting"))));
+# 255 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\ttn-otaa\\ttn-otaa.ino"
+    // LMIC init
+    os_init();
+    // Reset the MAC state. Session and pending data transfers will be discarded.
+    LMIC_reset();
 
- * @brief
+    LMIC_setLinkCheckMode(0);
+    LMIC_setDrTxpow(DR_SF7,14);
+    LMIC_selectSubBand(1);
+    for(int i = 0;i<103; i++){
+        mydata[i]=i;
+    }
+    // Start job (sending automatically starts OTAA too)
+    do_send(&sendjob);
+}
 
- * Resets connection when the radio becomes disconnected. 
-
- * This reruns the initalization code.
-
- * Will need to check if there is memory leakage.
-
- *  
-
- */
-# 262 "c:\\Users\\xiaoy\\Documents\\GitHub\\iotHardware\\modbus_ttn\\modbus_ttn.ino"
-void connectionReset(){
-    rtc.disableAlarm();
-    ttn_otaa_init();
-    rtc.setAlarmSeconds(rtc.getSeconds()+1);
-    rtc.enableAlarm(rtc.MATCH_SS);
+void loop() {
+    os_runloop_once();
 }
