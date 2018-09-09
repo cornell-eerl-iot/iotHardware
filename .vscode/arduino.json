@@ -1,5 +1,6 @@
 {
     "board": "arduino:avr:uno",
     "port": "COM14",
-    "sketch": "Arduino_meter\\Arduino_meter.ino"
+    "sketch": "Arduino_meter\\Arduino_meter.ino",
+    "output": "build"
 }
