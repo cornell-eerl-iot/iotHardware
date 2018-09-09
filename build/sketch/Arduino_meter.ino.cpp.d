@@ -1,5 +1,5 @@
-c:\Users\xiaoy\Documents\GitHub\iotHardware\build\libraries\Servo\avr\Servo.cpp.o: \
- C:\Users\xiaoy\Documents\Arduino\libraries\Servo\src\avr\Servo.cpp \
+c:\Users\xiaoy\Documents\GitHub\iotHardware\build\sketch\Arduino_meter.ino.cpp.o: \
+ c:\Users\xiaoy\Documents\GitHub\iotHardware\build\sketch\Arduino_meter.ino.cpp \
  C:\Program\ Files\ (x86)\Arduino\hardware\arduino\avr\cores\arduino/Arduino.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\arduino\avr\cores\arduino/binary.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\arduino\avr\cores\arduino/WCharacter.h \
@@ -10,6 +10,4 @@ c:\Users\xiaoy\Documents\GitHub\iotHardware\build\libraries\Servo\avr\Servo.cpp.
  C:\Program\ Files\ (x86)\Arduino\hardware\arduino\avr\cores\arduino/Printable.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\arduino\avr\cores\arduino/USBAPI.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\arduino\avr\cores\arduino/Arduino.h \
- C:\Program\ Files\ (x86)\Arduino\hardware\arduino\avr\variants\standard/pins_arduino.h \
- C:\Users\xiaoy\Documents\Arduino\libraries\Servo\src/Servo.h \
- C:\Users\xiaoy\Documents\Arduino\libraries\Servo\src/avr/ServoTimers.h
+ C:\Program\ Files\ (x86)\Arduino\hardware\arduino\avr\variants\standard/pins_arduino.h

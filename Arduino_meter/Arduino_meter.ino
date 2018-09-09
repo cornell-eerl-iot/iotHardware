@@ -1,7 +1,7 @@
 
 
-V_DC_OFFSET = 2.5;
-I_DC_OFFSET = 2.5;
+int V_DC_OFFSET = 2.5;
+int I_DC_OFFSET = 2.5;
 
 //CT: 200A:0.33VAC
 
