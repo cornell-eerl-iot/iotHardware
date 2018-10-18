@@ -53,17 +53,19 @@
 // first. When copying an EUI from ttnctl output, this means to reverse
 // the bytes. For TTN issued EUIs the last bytes should be 0xD5, 0xB3,
 // 0x70.
-static const u1_t PROGMEM APPEUI[8]= { 0x20, 0xFB, 0x00, 0xD0, 0x7E, 0xD5, 0xB3, 0x70 };
+
+//APPEUI (also know as JOINEUI) has no usage anymore in LoraServer
+static const u1_t PROGMEM APPEUI[8]= { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 void os_getArtEui (u1_t* buf) { memcpy_P(buf, APPEUI, 8);}
 
 // This should also be in little endian format, see above.
-static const u1_t PROGMEM DEVEUI[8]= { 0x95, 0x2B, 0xF5, 0x93, 0x9B, 0xAF, 0x60, 0x00 };
+static const u1_t PROGMEM DEVEUI[8]= { 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01 };
 void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
 
 // This key should be in big endian format (or, since it is not really a
 // number but a block of memory, endianness does not really apply). In
 // practice, a key taken from the TTN console can be copied as-is.
-static const u1_t PROGMEM APPKEY[16] = { 0x21, 0xC8, 0x39, 0x66, 0x22, 0xEE, 0xF3, 0xDA, 0xAE, 0x2A, 0x92, 0x89, 0x82, 0x51, 0xD8, 0x30 };
+static const u1_t PROGMEM APPKEY[16] = { 0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6, 0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C };
 void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 
 static uint8_t mydata[] = "Hello, world!";
