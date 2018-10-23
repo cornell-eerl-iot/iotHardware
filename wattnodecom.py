@@ -10,6 +10,9 @@ import pymodbus.client
 from pymodbus.client import sync as modbus
 import pymodbus.register_read_message
 import logging
+import sys
+import halfprecisionfloat
+
 '''
 logging.basicConfig()
 log = logging.getLogger()
@@ -28,16 +31,22 @@ client =  modbus.ModbusSerialClient(method='rtu', port=SERIAL,\
 connection = client.connect()
 print "Readout started"
 
+msg = []
+msg_size = 10
 
 while(connection):
-        
-    response = client.read_holding_registers(1700,count = 2,unit = 1)
-    print response.registers
-    mod = (response.registers[0])|(response.registers[1]<<8)
-    print mod
-    if(time.time()-start)>time_limit:
-        connection = False
-    time.sleep(1)
+	for i in range(msg_size):
+		response = client.read_holding_registers(1700,count = 2,unit = 1)
+		output = (response.registers[0])|(response.registers[1]<<16)
+		msg.append(output)
+		
+		
+		if(time.time()-start)>time_limit:
+			connection = False
+		time.sleep(1)
+	print msg
+	print sys.getsizeof(msg)
+	msg = []
 
 client.close()
 
