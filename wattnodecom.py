@@ -20,7 +20,7 @@ log.setLevel(logging.DEBUG)
 '''
 
 start = time.time()
-time_limit = 1
+time_limit = 10
 
 SERIAL = '/dev/ttyUSB0'
 BAUD = 19200
@@ -33,20 +33,20 @@ print "Readout started"
 
 msg = []
 msg_size = 10
-
-while(connection):
-	for i in range(msg_size):
-		response = client.read_holding_registers(1700,count = 2,unit = 1)
-		output = (response.registers[0])|(response.registers[1]<<16)
-		msg.append(output)
-		
-		
-		if(time.time()-start)>time_limit:
-			connection = False
-		time.sleep(1)
-	print msg
-	print sys.getsizeof(msg)
-	msg = []
-
+try:
+    while(connection):
+        for i in range(msg_size):
+            response = client.read_holding_registers(1700,count = 2,unit = 1)
+            output = (response.registers[0])|(response.registers[1]<<16)
+            msg.append(output)
+                        
+            if(time.time()-start)>time_limit:
+                connection = False
+            time.sleep(1)
+        print msg
+        #print sys.getsizeof(msg)
+        msg = []
+except:
+    print "closing"
 client.close()
 
