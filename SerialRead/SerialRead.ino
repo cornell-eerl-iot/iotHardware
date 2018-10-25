@@ -10,12 +10,13 @@ void setup()
 
 void loop()
 {
+
     os_runloop_once();
     if (FAILED)
     {
-        setup();
+        ttn_otaa_init();
     }
-
+/*
     if (SEND_COMPLETE)
     {
         int count;
@@ -41,4 +42,5 @@ void loop()
     {
         Serial1.println(0); //!ready
     }
+    */
 }

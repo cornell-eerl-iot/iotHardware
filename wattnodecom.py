@@ -46,7 +46,7 @@ try:
         print msg
         #print sys.getsizeof(msg)
         msg = []
-except:
+except KeyboardInterrupt:
     print "closing"
 client.close()
 

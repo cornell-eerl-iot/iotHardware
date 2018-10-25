@@ -1,5 +1,6 @@
 import time
 import serial
+import struct
 
 ser=serial.Serial(
 	port='COM6',
@@ -10,21 +11,33 @@ ser=serial.Serial(
 	timeout=1
 )
 
-message=[0,1,2,3,4,5,6,7,8,9]
-
+message=[]
+packed =[]
 try:
     while(1):
         #instr = ser.read(1)
         #print "reading: " + repr(instr)
-        
-        #if(instr == '1'):
-        print "writing.."
-        print ser.write(message)
-        time.sleep(0.2)
-        for i in range(12):
-            resp = ser.read()
-            print repr(resp)
-except:
+        message = []
+        packed =  []
+        message.append(int(time.time()) &0xffff)
+        time.sleep(1)
+        message.append(int(time.time()) &0xffff)
+        time.sleep(1)
+        message.append(int(time.time()) &0xffff)
+        for mes in message:
+            packed.append(struct.pack('>H',mes).encode('hex'))
+
+        if(ser.read()=='<'):   
+            print "\nmessage = " + repr(message)     
+            print "packed = " + repr(packed)
+            for p in packed:
+                ser.write(p)#.encode('utf-8'))
+            a = None
+            while(a!='<'):
+                a = ser.read()
+                print a,
+
+except KeyboardInterrupt:
     print "disconnected"
 
 ser.close()
