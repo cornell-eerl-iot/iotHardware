@@ -12,6 +12,7 @@ import pymodbus.register_read_message
 import logging
 import sys
 import halfprecisionfloat
+import struct
 
 '''
 logging.basicConfig()
@@ -32,13 +33,16 @@ connection = client.connect()
 print "Readout started"
 
 msg = []
-msg_size = 10
+msg_size = 2
 try:
     while(connection):
         for i in range(msg_size):
-            response = client.read_holding_registers(1700,count = 2,unit = 1)
+            response = client.read_holding_registers(1010,count = 2,unit = 1)
+            #print "Getting response"
             output = (response.registers[0])|(response.registers[1]<<16)
-            msg.append(output)
+            #aa = bytearray(output)
+            processed = struct.unpack('f', struct.pack('I',output))
+            msg.append(processed)
                         
             if(time.time()-start)>time_limit:
                 connection = False

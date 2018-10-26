@@ -3,7 +3,7 @@ import serial
 import struct
 
 ser=serial.Serial(
-	port='COM6',
+	port='/dev/serial0',
 	baudrate=19200,
 	parity=serial.PARITY_NONE,
 	stopbits=serial.STOPBITS_ONE,
@@ -13,6 +13,7 @@ ser=serial.Serial(
 
 message=[]
 packed =[]
+print "starting"
 try:
     while(1):
         #instr = ser.read(1)
@@ -26,8 +27,10 @@ try:
         message.append(int(time.time()) &0xffff)
         for mes in message:
             packed.append(struct.pack('>H',mes).encode('hex'))
-
-        if(ser.read()=='<'):   
+        print "start listening"
+        a = ser.read()
+        print a
+        if(a=='<'):   
             print "\nmessage = " + repr(message)     
             print "packed = " + repr(packed)
             for p in packed:
