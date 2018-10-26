@@ -18,7 +18,7 @@ void setup()
 {
     Serial.begin(19200);
     Serial1.begin(19200);
-    while (!Serial)
+    while (!Serial1)
         ;
     buff = new char[size];
     for(int i =0; i<size;i++){
@@ -28,18 +28,24 @@ void setup()
 
 void loop()
 {
-    while (Serial.available())
+    
+    while (Serial1.available())
     {
-        int count = Serial.readBytes(buff, 1);
+        //Serial.println("receiving messages");
+        int count = Serial1.readBytes(buff, 1);
+        for (int i = 0;i<size;i++){
+            Serial.print(buff[i]);
+        }
+        Serial.println("");
         if(count){
             uint8_t number = strtol(buff,NULL,16);
-            Serial.print(number);
-            Serial.print("|");
+            Serial1.print(number);
+            Serial1.print("|");
         }
     }
     delay(2000);
-    if(Serial.available()==0){ //&& ready){
-        Serial.print('<');
-        Serial.flush();
-    }
+    //if(Serial1.available()==0){ //&& ready){
+        Serial1.print('<');
+        Serial1.flush();
+    //}
 }
