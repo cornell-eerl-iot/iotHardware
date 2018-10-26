@@ -7,15 +7,11 @@ with serial.Serial(
 	parity=serial.PARITY_NONE,
 	stopbits=serial.STOPBITS_ONE,
 	bytesize=serial.EIGHTBITS,
-	timeout=2
+	timeout=1
 ) as ser:
-		
-
 	try:
-		while(1):
-			a = ser.read()
-			print "reading: " + repr(a)
-		   #time.sleep(1)
+		while True:
+			ser.write("a".encode('utf-8'))
 	except KeyboardInterrupt:
-		print "disconnected"
-
+		print "exited"
+	
