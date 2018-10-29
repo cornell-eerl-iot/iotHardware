@@ -14,7 +14,7 @@ with serial.Serial(
 	try:
 		while(1):
 			a = ser.read()
-			print "reading: " + repr(a)
+			print "reading: " + str(a)
 		   #time.sleep(1)
 	except KeyboardInterrupt:
 		print "disconnected"
