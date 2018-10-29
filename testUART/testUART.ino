@@ -13,7 +13,7 @@ void setup()
 {
     Serial.begin(19200);
     Serial1.begin(19200);
-    while (!Serial || !Serial1){;}
+    //while (!Serial || !Serial1){;}
     delay(10);
     Serial.print("begin");
 }
@@ -21,7 +21,8 @@ void setup()
 void loop()
 {
     Serial.println("sending");   
-    Serial1.println("asdfsadf");
+    Serial1.print('1');
+    delay(1000);
     /*while(Serial1.available()){
         int a = Serial1.read();
     Serial.print("read: ");Serial.println(a);

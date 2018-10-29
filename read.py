@@ -2,7 +2,7 @@ import time
 import serial
 
 with serial.Serial(
-	port='/dev/serial0',
+	port="COM7",#'/dev/serial0',
 	baudrate=19200,
 	parity=serial.PARITY_NONE,
 	stopbits=serial.STOPBITS_ONE,
