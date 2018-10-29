@@ -29,16 +29,14 @@ try:
             packed.append(struct.pack('>H',mes).encode('hex'))
         print "start listening"
         a = ser.read()
-        print a
-        if(a=='<'):   
-            print "\nmessage = " + repr(message)     
+        print "signal from MCU: " + repr(a)
+        if(a=='<'):
+            #print ser.readline()
+            print "message = " + repr(message)     
             print "packed = " + repr(packed)
             for p in packed:
                 ser.write(p)#.encode('utf-8'))
-            a = None
-            while(a!='<'):
-                a = ser.read()
-                print a,
+            print ser.readline()
 
 except KeyboardInterrupt:
     print "disconnected"

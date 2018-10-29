@@ -37,12 +37,12 @@ msg_size = 2
 try:
     while(connection):
         for i in range(msg_size):
-            response = client.read_holding_registers(1010,count = 2,unit = 1)
+            response = client.read_holding_registers(1700,count = 2,unit = 1)
             #print "Getting response"
             output = (response.registers[0])|(response.registers[1]<<16)
             #aa = bytearray(output)
-            processed = struct.unpack('f', struct.pack('I',output))
-            msg.append(processed)
+            #processed = struct.unpack('f', struct.pack('I',output))
+            msg.append(output)
                         
             if(time.time()-start)>time_limit:
                 connection = False
