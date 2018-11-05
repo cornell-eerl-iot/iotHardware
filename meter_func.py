@@ -7,6 +7,11 @@ import logging
 import sys
 import halfprecisionfloat
 import struct
+from collections import deque
+
+fcomp = halfprecisionfloat.Float16Compressor()
+lst = []
+queue = deque(lst,5)
 
 def run_meter():
     with serial.Serial(
@@ -18,8 +23,6 @@ def run_meter():
         timeout=1
     ) as ser:
         try:
-            message=[]
-            packed =[]
             print "starting"
 
             SERIAL = '/dev/ttyUSB0'
@@ -33,31 +36,33 @@ def run_meter():
 
             time.sleep(1)
             
-            msg_size = 2
+            msg_size = 7
             while(connection):
-                message = []
                 packed =  []
+                message = []
+                packed.append(time.localtime()[4])
+                packed.append(time.localtime()[5])
                 for i in range(msg_size):
                     response = client.read_holding_registers(1700,count = 2,unit = 1)
                     #print "Getting response"
                     output = (response.registers[0])|(response.registers[1]<<16)
-                    #aa = bytearray(output)
-                    #processed = struct.unpack('f', struct.pack('I',output))
+                    compressed = fcomp.compress(output)
                     message.append(output)
-                                
-                    time.sleep(1)
-                            
-                for mes in message:
-                    packed.append(struct.pack('>I',mes).encode('hex'))
-                while ser.read() != '<':
-                    pass
+                    #processed = struct.unpack('f', struct.pack('I',output))
+                    packed.append(struct.pack('>I',compressed).encode('hex'))
+                    time.sleep(0.98) #delay to account for computation time
+                queue.append(packed)
+                print "message = " + repr(message)     
+                print "packed = " + repr(packed)
+                if ser.read() == '<':
+                    msg = queue.popleft()
+                    for p in msg:
+                        ser.write(p)#.encode('utf-8'))
                 #print "signal from MCU: " + repr(a)
                 #if(a=='<'):
                     #print ser.readline()
-                print "message = " + repr(message)     
-                print "packed = " + repr(packed)
-                for p in packed:
-                    ser.write(p)#.encode('utf-8'))
+                
+                
                 print ser.readline()
                 #print sys.getsizeof(msg)
         except:
