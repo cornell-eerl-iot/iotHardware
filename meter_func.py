@@ -14,6 +14,9 @@ lst = []
 queue = deque(lst,5)
 
 def run_meter():
+    """
+    packs seconds of data 
+    """
     with serial.Serial(
         port='/dev/serial0',
         baudrate=19200,
@@ -38,26 +41,32 @@ def run_meter():
             
             msg_size = 7
             while(connection):
-                packed =  []
+                #packed  =  []
                 message = []
-                packed.append(time.localtime()[4])
-                packed.append(time.localtime()[5])
+                message.append(time.localtime()[4]) #local relative hour
+                message.append(time.localtime()[5]) #local relative minutes
                 for i in range(msg_size):
                     response = client.read_holding_registers(1700,count = 2,unit = 1)
                     #print "Getting response"
                     output = (response.registers[0])|(response.registers[1]<<16)
-                    compressed = fcomp.compress(output)
-                    message.append(output)
+                    #compressed = fcomp.compress(output)
+                    message.append((output&0xff000000) >> 24)
+                    message.append((output&0x00ff0000) >> 16)
+                    message.append((output&0x0000ff00) >> 8)
+                    message.append((output&0x000000ff) >> 0)
                     #processed = struct.unpack('f', struct.pack('I',output))
-                    packed.append(struct.pack('>I',compressed).encode('hex'))
+                    #packed.append(struct.pack('>I',compressed).encode('hex'))
+                    
                     time.sleep(0.98) #delay to account for computation time
-                queue.append(packed)
+                queue.append(message)
                 print "message = " + repr(message)     
-                print "packed = " + repr(packed)
+                #print "packed = " + repr(packed)
+                print "queue = " + repr(queue)
                 if ser.read() == '<':
                     msg = queue.popleft()
+                    print "msg = " + repr(msg)
                     for p in msg:
-                        ser.write(p)#.encode('utf-8'))
+                        ser.write(p.encode('utf-8'))
                 #print "signal from MCU: " + repr(a)
                 #if(a=='<'):
                     #print ser.readline()
