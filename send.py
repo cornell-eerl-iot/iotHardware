@@ -3,8 +3,8 @@ import serial
 import struct
 
 with serial.Serial(
-	port='COM6',#/dev/serial0',
-	baudrate=19200,
+	port='/dev/serial0', #'COM6',
+	baudrate=115200,
 	parity=serial.PARITY_NONE,
 	stopbits=serial.STOPBITS_ONE,
 	bytesize=serial.EIGHTBITS,
@@ -39,7 +39,7 @@ with serial.Serial(
                 print "packed = " + repr(packed)
                 for p in packed:
                     ser.write(p)
-                print ser.readline()
+                # print ser.readline()
 
     except KeyboardInterrupt:
         print "disconnected"

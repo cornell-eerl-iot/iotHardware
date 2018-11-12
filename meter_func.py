@@ -19,7 +19,7 @@ def run_meter():
     """
     with serial.Serial(
         port='/dev/serial0',
-        baudrate=19200,
+        baudrate=115200,
         parity=serial.PARITY_NONE,
         stopbits=serial.STOPBITS_ONE,
         bytesize=serial.EIGHTBITS,
@@ -41,7 +41,7 @@ def run_meter():
             
             msg_size = 7
             while(connection):
-                #packed  =  []
+                packed  =  []
                 message = []
                 message.append(time.localtime()[4]) #local relative hour
                 message.append(time.localtime()[5]) #local relative minutes
@@ -58,7 +58,9 @@ def run_meter():
                     #packed.append(struct.pack('>I',compressed).encode('hex'))
                     
                     time.sleep(0.98) #delay to account for computation time
-                queue.append(message)
+                for mes in message:
+                    packed.append(struct.pack('>B',mes).encode('hex'))
+                queue.append(packed)
                 print "message = " + repr(message)     
                 #print "packed = " + repr(packed)
                 print "queue = " + repr(queue)
@@ -69,10 +71,6 @@ def run_meter():
                     print "msg = " + repr(msg)
                     for p in msg:
                         ser.write(p)
-                    print ser.readline()
-                #print "signal from MCU: " + repr(a)
-                #if(a=='<'):
-                    #print ser.readline()
         except:
             print "disconnected"
         client.close()
