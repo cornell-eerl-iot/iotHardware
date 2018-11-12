@@ -3,7 +3,7 @@ import serial
 import struct
 
 with serial.Serial(
-	port='/dev/serial0',
+	port='COM6',#/dev/serial0',
 	baudrate=19200,
 	parity=serial.PARITY_NONE,
 	stopbits=serial.STOPBITS_ONE,
@@ -26,19 +26,20 @@ with serial.Serial(
             message.append(int(time.time()) &0xffff)
             time.sleep(1)
             message.append(int(time.time()) &0xffff)
+            #pack the integers into 2 bytes
             for mes in message:
                 packed.append(struct.pack('>H',mes).encode('hex'))
             print "start listening"
-            while ser.read() != '<':
-                pass
-            #print "signal from MCU: " + repr(a)
-            #if(a=='<'):
-                #print ser.readline()
-            print "message = " + repr(message)     
-            print "packed = " + repr(packed)
-            for p in packed:
-                ser.write(p)#.encode('utf-8'))
-            print ser.readline()
+            if ser.read() == '<':
+                ser.write('>')
+                ser.reset_input_buffer()
+                
+                print "read '<'"
+                print "message = " + repr(message)     
+                print "packed = " + repr(packed)
+                for p in packed:
+                    ser.write(p)
+                print ser.readline()
 
     except KeyboardInterrupt:
         print "disconnected"
