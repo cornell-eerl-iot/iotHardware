@@ -63,18 +63,16 @@ def run_meter():
                 #print "packed = " + repr(packed)
                 print "queue = " + repr(queue)
                 if ser.read() == '<':
+                    ser.write('>')
+                    ser.reset_input_buffer()
                     msg = queue.popleft()
                     print "msg = " + repr(msg)
                     for p in msg:
                         ser.write(p)
-                a = ser.read()
-                print "signal from MCU: " + repr(a)
-                if(a=='<'):
                     print ser.readline()
-                
-                
-                # print ser.readline()
-                #print sys.getsizeof(msg)
-        except KeyboardInterrupt:
+                #print "signal from MCU: " + repr(a)
+                #if(a=='<'):
+                    #print ser.readline()
+        except:
             print "disconnected"
         client.close()

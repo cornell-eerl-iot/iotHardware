@@ -44,8 +44,8 @@ void loop()
         }
     }
     delay(2000);
-    //if(Serial1.available()==0){ //&& ready){
+    if(Serial1.available()==0){ //&& ready){
         Serial1.print('<');
         Serial1.flush();
-    //}
+    }
 }
