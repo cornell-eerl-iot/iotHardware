@@ -4,7 +4,7 @@ import struct
 
 with serial.Serial(
 	port='COM6',#/dev/serial0',
-	baudrate=19200,
+	baudrate=115200,
 	parity=serial.PARITY_NONE,
 	stopbits=serial.STOPBITS_ONE,
 	bytesize=serial.EIGHTBITS,
