@@ -39,7 +39,7 @@ def run_meter():
 
             time.sleep(1)
             
-            msg_size = 7
+            msg_size = 5
             while(connection):
                 packed  =  []
                 message = []
