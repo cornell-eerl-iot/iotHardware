@@ -12,7 +12,7 @@
 
 /**
  * 3 CT's. Real and Reactive. 6 reading total.
- * Each reading is a 4 byte float. We can compress it to 2 bytes
+ * Each reading is a 4 byte float. We can compress it to 2 bytes.
  * Total is therefore 12 bytes per second. We can send up to 100 
  * bytes. This means every eight seconds we send 96 bytes. We 
  * can also send 60 bytes every 5 seconds.
@@ -38,9 +38,11 @@ void setup()
 
 void loop()
 {
+    if (!Serial1.available()){
+        Serial1.print('<');
+        Serial1.flush();
+    }
     
-    Serial1.print('<');
-    Serial1.flush();
     while (Serial1.available()){
         if (Serial1.read()=='>'){
         //Serial.println("receiving messages");
@@ -72,6 +74,4 @@ void loop()
     }   
         
     delay(20);
-    //serialClearBuffer();
-    //delay(2000);
 }   
