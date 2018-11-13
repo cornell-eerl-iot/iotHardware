@@ -37,8 +37,10 @@ msg_size = 2
 try:
     while(connection):
         for i in range(msg_size):
+            start = time.time()
+            print "getting resp"
             response = client.read_holding_registers(1700,count = 2,unit = 1)
-            #print "Getting response"
+            print "got response"
             output = (response.registers[0])|(response.registers[1]<<16)
             #aa = bytearray(output)
             #processed = struct.unpack('f', struct.pack('I',output))
@@ -46,7 +48,10 @@ try:
                         
             if(time.time()-start)>time_limit:
                 connection = False
-            time.sleep(1)
+            end = time.time()
+            delay = max(0,1- end+start)
+            print "time diff: " + repr(end-start)
+            time.sleep(delay)
         print msg
         #print sys.getsizeof(msg)
         msg = []

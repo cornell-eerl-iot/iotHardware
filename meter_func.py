@@ -34,15 +34,18 @@ def run_meter():
 
         time.sleep(1)
         
-        msg_size = 7
+        msg_size = 5
         while(connection):
-            packed  =  []
+            packed  = []
             message = []
             message.append(time.localtime()[4]) #local relative hour
             message.append(time.localtime()[5]) #local relative minutes
             for i in range(msg_size):
+                start_time = time.time()
+                print "Polling Response"
                 response = client.read_holding_registers(1700,count = 2,unit = 1)
-                #print "Getting response"
+                
+                print "Got Response"
                 output = (response.registers[0])|(response.registers[1]<<16)
                 #compressed = fcomp.compress(output)
                 message.append((output&0xff000000) >> 24)
@@ -51,8 +54,10 @@ def run_meter():
                 message.append((output&0x000000ff) >> 0)
                 #processed = struct.unpack('f', struct.pack('I',output))
                 #packed.append(struct.pack('>I',compressed).encode('hex'))
-                
-                time.sleep(0.98) #delay to account for computation time
+                end_time = time.time()
+                print "time diff: " + repr(end_time-start_time)
+                delay  = max(0, 1 - (end_time-start_time))
+                time.sleep(delay) #delay to account for computation time
             for mes in message:
                 packed.append(struct.pack('>B',mes).encode('hex'))
             Queue.append(packed)
@@ -80,3 +85,5 @@ def serial_monitor():
                 print "msg = " + repr(msg)
                 for p in msg:
                     ser.write(p)
+            else:
+                time.sleep(0.5) #SUPPER IMPORTANT AS TO NOT OVERLOAD CPU
