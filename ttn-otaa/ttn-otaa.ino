@@ -1,18 +1,45 @@
-/**
- * Modified version of the ttn-otaa.ino file found in arduino-lmic
- * library to be compatible with modbus_ttn.ino. 
- * This version is a header with additional functions that 
- * reduces the size of the payload to be send. Also supports reset
- * 
- * Comment Updated 8/10/2018
-*/
-
+/*******************************************************************************
+ * Copyright (c) 2015 Thomas Telkamp and Matthijs Kooijman
+ * Copyright (c) 2018 Terry Moore, MCCI
+ *
+ * Permission is hereby granted, free of charge, to anyone
+ * obtaining a copy of this document and accompanying files,
+ * to do whatever they want with them without any restriction,
+ * including, but not limited to, copying, modification and redistribution.
+ * NO WARRANTY OF ANY KIND IS PROVIDED.
+ *
+ * This example sends a valid LoRaWAN packet with payload "Hello,
+ * world!", using frequency and encryption settings matching those of
+ * the The Things Network. It's pre-configured for the Adafruit
+ * Feather M0 LoRa.
+ *
+ * This uses OTAA (Over-the-air activation), where where a DevEUI and
+ * application key is configured, which are used in an over-the-air
+ * activation procedure where a DevAddr and session keys are
+ * assigned/generated for use with all further communication.
+ *
+ * Note: LoRaWAN per sub-band duty-cycle limitation is enforced (1% in
+ * g1, 0.1% in g2), but not the TTN fair usage policy (which is probably
+ * violated by this sketch when left running for longer)!
+ * To use this sketch, first register your application and device with
+ * the things network, to set or generate an AppEUI, DevEUI and AppKey.
+ * Multiple devices can use the same AppEUI, but each device has its own
+ * DevEUI and AppKey.
+ *
+ * Do not forget to define the radio type correctly in config.h.
+ *
+ *******************************************************************************/
 
 #include <lmic.h>
 #include <hal/hal.h>
 #include <SPI.h>
-
-
+//
+// For normal use, we require that you edit the sketch to replace FILLMEIN
+// with values assigned by the TTN console. However, for regression tests,
+// we want to be able to compile these scripts. The regression tests define
+// COMPILE_REGRESSION_TEST, and in that case we define FILLMEIN to a non-
+// working but innocuous value.
+//
 #ifdef COMPILE_REGRESSION_TEST
 # define FILLMEIN 0
 #else
@@ -20,27 +47,42 @@
 # define FILLMEIN (#dont edit this, edit the lines that use FILLMEIN)
 #endif
 
-//lsb format
-static const u1_t PROGMEM APPEUI[8]= { 0x20, 0xFB, 0x00, 0xD0, 0x7E, 0xD5, 0xB3, 0x70 };//0xEC, 0xEE, 0x00, 0xD0, 0x7E, 0xD5, 0xB3, 0x70 };
+// This EUI must be in little-endian format, so least-significant-byte
+// first. When copying an EUI from ttnctl output, this means to reverse
+// the bytes. For TTN issued EUIs the last bytes should be 0xD5, 0xB3,
+// 0x70.
+static const u1_t PROGMEM APPEUI[8]= //{ 0x11, 0x15, 0x01, 0xD0, 0x7E, 0xD5, 0xB3, 0x70 };
+//rasp 
+{ 0x20, 0xFB, 0x00, 0xD0, 0x7E, 0xD5, 0xB3, 0x70 };
+// emeter { 0x11, 0x15, 0x01, 0xD0, 0x7E, 0xD5, 0xB3, 0x70 };
+// 0xEC, 0xEE, 0x00, 0xD0, 0x7E, 0xD5, 0xB3, 0x70 };
 void os_getArtEui (u1_t* buf) { memcpy_P(buf, APPEUI, 8);}
 
 // This should also be in little endian format, see above.
-static const u1_t PROGMEM DEVEUI[8]= { 0x93, 0x2B, 0xF5, 0x93, 0x9B, 0xAF, 0x60, 0x00 };//0x53, 0x01, 0x00, 0x00, 0x01, 0xCC, 0x02, 0x00 };
+static const u1_t PROGMEM DEVEUI[8]= //{ 0x43, 0xE0, 0xBF, 0xE5, 0x02, 0x54, 0x54, 0x01 };
+//emeter { 0x43, 0xE0, 0xBF, 0xE5, 0x02, 0x54, 0x54, 0x00 };
+//rasp 
+{ 0x93, 0x2B, 0xF5, 0x93, 0x9B, 0xAF, 0x60, 0x00 };
+//0x53, 0x01, 0x00, 0x00, 0x01, 0xCC, 0x02, 0x00 };
 void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
 
-static const u1_t PROGMEM APPKEY[16] = { 0x21, 0xC8, 0x39, 0x66, 0x22, 0xEE, 0xF3, 0xDA, 0xAE, 0x2A, 0x92, 0x89, 0x82, 0x51, 0xD8, 0x29 };
+// This key should be in big endian format (or, since it is not really a
+// number but a block of memory, endianness does not really apply). In
+// practice, a key taken from the TTN console can be copied as-is.
+static const u1_t PROGMEM APPKEY[16] = //{ 0x7E, 0x07, 0x88, 0xAE, 0x2E, 0x2E, 0xED, 0xAA, 0x11, 0xAB, 0x6F, 0x61, 0x16, 0x2D, 0x51, 0x98};
+//rasp 
+{ 0x21, 0xC8, 0x39, 0x66, 0x22, 0xEE, 0xF3, 0xDA, 0xAE, 0x2A, 0x92, 0x89, 0x82, 0x51, 0xD8, 0x29 };
+// emeter { 0x7E, 0x07, 0x88, 0xAE, 0x2E, 0x2E, 0xED, 0xAA, 0x11, 0xAB, 0x6F, 0x61, 0x16, 0x2D, 0x51, 0x98 };//0xA2, 0x0E, 0x07, 0x34, 0x6E, 0x98, 0x71, 0xE0, 0x6C, 0x71, 0x98, 0x62, 0x53, 0x1A, 0xD4, 0xA3 };
 void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 
+uint8_t mydata[103];
 
-uint8_t *mydata; //pointer to data to be sent
-osjob_t sendjob;
 
-uint8_t DATA_LENGTH=100; //length of data to be sent
-bool SEND_COMPLETE = true; //indicator used to tell us when sending data is done.
-bool JOINED = false; //inducator when we joined the network
-bool FAILED = false; //connection lost
-uint8_t Connection_Num = 0; //number of reconnects 
+static osjob_t sendjob;
 
+// Schedule TX every this many seconds (might become longer due to duty
+// cycle limitations).
+const unsigned TX_INTERVAL = 1;
 
 // Pin mapping
 #if defined(ARDUINO_SAMD_FEATHER_M0)
@@ -72,7 +114,6 @@ const lmic_pinmap lmic_pins = {
 # error "Unknown target"
 #endif
 
-
 void onEvent (ev_t ev) {
     Serial.print(os_getTime());
     Serial.print(": ");
@@ -95,7 +136,6 @@ void onEvent (ev_t ev) {
         case EV_JOINED:
             Serial.println(F("EV_JOINED"));
             {
-
               u4_t netid = 0;
               devaddr_t devaddr = 0;
               u1_t nwkKey[16];
@@ -119,9 +159,7 @@ void onEvent (ev_t ev) {
                       Serial.print(nwkKey[i], HEX);
               }
               Serial.println("");
-              JOINED = true;
             }
-            
             // Disable link check validation (automatically enabled
             // during join, but because slow data rates change max TX
       // size, we don't use it in this example.
@@ -139,11 +177,10 @@ void onEvent (ev_t ev) {
         */
         case EV_JOIN_FAILED:
             Serial.println(F("EV_JOIN_FAILED"));
-            FAILED = true;
             break;
         case EV_REJOIN_FAILED:
             Serial.println(F("EV_REJOIN_FAILED"));
-            FAILED = true;
+            break;
             break;
         case EV_TXCOMPLETE:
             Serial.println(F("EV_TXCOMPLETE (includes waiting for RX windows)"));
@@ -155,11 +192,10 @@ void onEvent (ev_t ev) {
               Serial.println(F(" bytes of payload"));
             }
             // Schedule next transmission
-            SEND_COMPLETE = true;
+            os_setTimedCallback(&sendjob, os_getTime()+sec2osticks(TX_INTERVAL), do_send);
             break;
         case EV_LOST_TSYNC:
             Serial.println(F("EV_LOST_TSYNC"));
-            FAILED = true;
             break;
         case EV_RESET:
             Serial.println(F("EV_RESET"));
@@ -170,7 +206,6 @@ void onEvent (ev_t ev) {
             break;
         case EV_LINK_DEAD:
             Serial.println(F("EV_LINK_DEAD"));
-            FAILED = true;
             break;
         case EV_LINK_ALIVE:
             Serial.println(F("EV_LINK_ALIVE"));
@@ -189,34 +224,36 @@ void onEvent (ev_t ev) {
         default:
             Serial.print(F("Unknown event: "));
             Serial.println((unsigned) ev);
-            FAILED = true;
             break;
     }
 }
 
 void do_send(osjob_t* j){
-    Serial.println("do_send");
     // Check if there is not a current TX/RX job running
     if (LMIC.opmode & OP_TXRXPEND) {
         Serial.println(F("OP_TXRXPEND, not sending"));
     } else {
         // Prepare upstream data transmission at the next possible time.
-        LMIC_setTxData2(1, mydata, DATA_LENGTH, 0);
+        LMIC_setTxData2(1, mydata, sizeof(mydata), 0);
         Serial.println(F("Packet queued"));
     }
-    SEND_COMPLETE = false;
+    // Next TX is scheduled after TX_COMPLETE event.
 }
 
-void ttn_otaa_init(){
-    //delay(5000);
-    //while (! Serial);
-    Serial.println(F("Initializing TTN-LoRa settings"));
+void setup() {
+    delay(5000);
+    while (! Serial)
+        ;
+    Serial.begin(9600);
+    Serial.println(F("Starting"));
+
     #ifdef VCC_ENABLE
     // For Pinoccio Scout boards
     pinMode(VCC_ENABLE, OUTPUT);
     digitalWrite(VCC_ENABLE, HIGH);
-    //delay(1000);
+    delay(1000);
     #endif
+
     // LMIC init
     os_init();
     // Reset the MAC state. Session and pending data transfers will be discarded.
@@ -225,18 +262,13 @@ void ttn_otaa_init(){
     LMIC_setLinkCheckMode(0);
     LMIC_setDrTxpow(DR_SF7,14);
     LMIC_selectSubBand(1);
-    mydata = new uint8_t[DATA_LENGTH];
-    for(int i = 0;i<DATA_LENGTH;i++){
-        mydata[i]=0xFF;
+    for(int i = 0;i<103; i++){
+        mydata[i]=i;
     }
     // Start job (sending automatically starts OTAA too)
-    
-    do_send(&sendjob); //establish connection
-    Connection_Num++;
-    JOINED = false;
-    //Wait until we are able to join the network before start polling.
-    while(!JOINED){// Just want to join, will send in FSM.
-        os_runloop_once();   
-    }
-    FAILED = false;
+    do_send(&sendjob);
+}
+
+void loop() {
+    os_runloop_once();
 }
