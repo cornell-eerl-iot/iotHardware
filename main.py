@@ -9,7 +9,13 @@ class SerialMonitor(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        meter_func.serial_monitor()
+        while True:
+            try:
+                meter_func.serial_monitor()
+            except:
+                print "error at Serial for FeatherM0"
+                print "Unexpected error:", sys.exc_info()
+            time.sleep(1)
 
 class MeterMonitor(threading.Thread):
     
@@ -17,7 +23,13 @@ class MeterMonitor(threading.Thread):
         threading.Thread.__init__(self)
     
     def run(self):
-        meter_func.run_meter()
+        while True:
+            try:
+                meter_func.run_meter()
+            except:
+                print "error at Serial for Wattnode"
+                print "Unexpected error:", sys.exc_info()
+            time.sleep(1)
 
 
 

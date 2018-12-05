@@ -42,27 +42,29 @@ void loop()
             Serial1.flush();
         }
         delay(100);
-        counter = 0;
-        while (Serial1.available())
-        {
-            //Serial.print("receiving messages");
-            char a [size]; 
-            int count = Serial1.readBytes(a, 1);
-            for (int i = 0;i<size;i++){
-                Serial.print(a[i]);
+        if (Serial1.read()=='>'){
+            while (Serial1.available())
+            {
+                //Serial.print("receiving messages");
+                char a [size]; 
+                int count = Serial1.readBytes(a, 1);
+                for (int i = 0;i<size;i++){
+                    Serial.print(a[i]);
+                }
+                Serial.println("");
+                uint8_t number = strtol(buff,NULL,16);
+                
+                mydata[counter++] = number;
+                if (counter > DATA_LENGTH)
+                    counter = 0;
             }
-            Serial.println("");
-            uint8_t number = strtol(buff,NULL,16);
-            
-            mydata[counter++] = number;
-            if (counter > DATA_LENGTH)
-                counter = 0;
-        }
-        do_send(&sendjob);
+            do_send(&sendjob);
+            counter = 0;
+        }       
     }
     else
     {
         os_runloop_once();
     }
-    delay(100);
+    
 }
