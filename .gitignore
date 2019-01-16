@@ -42,4 +42,4 @@ emacs.core
 vs-readme.txt
 
 #ignore build
-build/
+build
