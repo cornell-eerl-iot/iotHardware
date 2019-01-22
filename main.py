@@ -17,7 +17,7 @@ class MeterMonitor(threading.Thread):
         threading.Thread.__init__(self)
     
     def run(self):
-        meter_func.run_meter()
+        meter_func.run_meter()a
 
 
 
