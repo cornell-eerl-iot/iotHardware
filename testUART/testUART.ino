@@ -23,6 +23,9 @@ uint8_t *buff;
 int size = 120;
 int counter = 0;
 
+unsigned long u32wait;
+
+
 void setup()
 {
     Serial.begin(115200);
@@ -33,8 +36,8 @@ void setup()
     for(int i =0; i<size;i++){
         buff[i]=0;
     }
+    u32wait = millis();
 }
-
 
 void loop()
 {
@@ -64,7 +67,7 @@ void loop()
                 // Serial.print(a[i]);
                 // }
             }
-            for (int i = 0;i<counter-1;i++){
+            for (int i = 0;i<counter;i++){
                 Serial.print(buff[i],HEX);Serial.print(",");
             }
             counter = 0;
@@ -73,5 +76,5 @@ void loop()
             
     }   
         
-    delay(20);
+    delay(2000);
 }   
