@@ -23,6 +23,9 @@ class MeterMonitor(threading.Thread):
         threading.Thread.__init__(self)
     
     def run(self):
+<<<<<<< HEAD
+        meter_func.run_meter()a
+=======
         while True:
             try:
                 meter_func.run_meter()
@@ -30,6 +33,7 @@ class MeterMonitor(threading.Thread):
                 print "error at Serial for Wattnode"
                 print "Unexpected error:", sys.exc_info()
             time.sleep(1)
+>>>>>>> e39cc3d515cc979f4a7e593282a99cd758c924fa
 
 
 
