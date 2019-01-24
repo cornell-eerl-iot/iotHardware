@@ -10,20 +10,19 @@
 #include "ttn-otaa.h"
 #include <stdlib.h>
 
-char *buff;
+bool DEBUG = true;
+
 int size = 2;
-bool ready = true;
 int counter = 0;
+
+
 
 void setup()
 {
-    Serial.begin(19200);
+    if (DEBUG)
+        Serial.begin(19200);
     Serial1.begin(115200);
     ttn_otaa_init();
-    buff = new char[size];
-    for(int i =0; i<size;i++){
-        buff[i]=0;
-    }
     counter = 0;
 }
 
@@ -38,6 +37,8 @@ void loop()
     if (SEND_COMPLETE)
     {
         if(Serial1.available()==0){ //&& ready){
+            if (DEBUG)
+                Serial.println("ready");
             Serial1.print('<');
             Serial1.flush();
         }
@@ -48,15 +49,23 @@ void loop()
                 //Serial.print("receiving messages");
                 char a [size]; 
                 int count = Serial1.readBytes(a, 1);
-                for (int i = 0;i<size;i++){
-                    Serial.print(a[i]);
+                uint8_t number = strtol(a,NULL,16);
+                if (DEBUG){
+                    for (int i = 0;i<size;i++){
+                        Serial.print(a[i]);
+                    }
+                    Serial.println("");
                 }
-                Serial.println("");
-                uint8_t number = strtol(buff,NULL,16);
-                
                 mydata[counter++] = number;
                 if (counter > DATA_LENGTH)
                     counter = 0;
+            }
+            if (DEBUG){
+                for (int i = 0;i<DATA_LENGTH;i++){
+                    Serial.print(mydata[i],HEX);
+                    Serial.print("|");
+                }
+                Serial.println("");
             }
             do_send(&sendjob);
             counter = 0;

@@ -39,8 +39,8 @@ def run_meter():
         while(connection):
             packed  = []
             message = []
-            message.append(time.localtime()[4]) #local relative hour
-            message.append(time.localtime()[5]) #local relative minutes
+            message.append(time.localtime()[4]) #local relative minutes
+            message.append(time.localtime()[5]) #local relative seconds
             for i in range(msg_size):
                 start_time = time.time()
                 #print "Polling Response"

@@ -36,7 +36,6 @@ void setup()
     for(int i =0; i<size;i++){
         buff[i]=0;
     }
-    u32wait = millis();
 }
 
 void loop()

@@ -225,6 +225,7 @@ void ttn_otaa_init(){
     LMIC_setLinkCheckMode(0);
     LMIC_setDrTxpow(DR_SF7,14);
     LMIC_selectSubBand(1);
+    delete[] mydata;
     mydata = new uint8_t[DATA_LENGTH];
     for(int i = 0;i<DATA_LENGTH;i++){
         mydata[i]=0xFF;
