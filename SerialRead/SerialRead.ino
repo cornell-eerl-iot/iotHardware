@@ -10,7 +10,7 @@
 #include "ttn-otaa.h"
 #include <stdlib.h>
 
-bool DEBUG = true;
+bool DEBUG = false;
 
 int size = 2;
 int counter = 0;
@@ -43,22 +43,26 @@ void loop()
             Serial1.flush();
         }
         delay(100);
-        if (Serial1.read()=='>'){
-            while (Serial1.available())
+        while (Serial1.available())
+        {
+            if (Serial1.read()=='>')
             {
-                //Serial.print("receiving messages");
-                char a [size]; 
-                int count = Serial1.readBytes(a, 1);
-                uint8_t number = strtol(a,NULL,16);
-                if (DEBUG){
-                    for (int i = 0;i<size;i++){
-                        Serial.print(a[i]);
+                while (Serial1.available())
+                {           
+                    //Serial.print("receiving messages");
+                    char a [size]; 
+                    int count = Serial1.readBytes(a, size);
+                    uint8_t number = strtol(a,NULL,16);
+                    if (DEBUG){
+                        for (int i = 0;i<size;i++){
+                            Serial.print(a[i]);
+                        }
+                        Serial.println("");
                     }
-                    Serial.println("");
+                    mydata[counter++] = number;
+                    if (counter > DATA_LENGTH)
+                        counter = 0;
                 }
-                mydata[counter++] = number;
-                if (counter > DATA_LENGTH)
-                    counter = 0;
             }
             if (DEBUG){
                 for (int i = 0;i<DATA_LENGTH;i++){
