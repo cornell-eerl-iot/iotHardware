@@ -3,6 +3,7 @@ import meter_func
 import threading
 import time
 import sys
+import subprocess
 
 class SerialMonitor(threading.Thread):
     def __init__(self):
@@ -25,7 +26,9 @@ class MeterMonitor(threading.Thread):
     def run(self):
         while True:
             try:
-                meter_func.run_meter()
+                port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
+                port = port[:(len(port)-1)]
+                meter_func.run_meter(port,19200)
             except:
                 print "error at Serial for Wattnode"
                 print "Unexpected error:", sys.exc_info()
@@ -34,24 +37,17 @@ class MeterMonitor(threading.Thread):
 
 
 if __name__ == "__main__":
+    #meter_func.meter_init(100,100,200,0,0,0)
     Meter = MeterMonitor()
     Serial = SerialMonitor()
     
     try:
+        
+        Meter.start()
+        time.sleep(1)
+        Serial.start()
         while True:
-            try:
-                if not Meter.is_alive():
-                    Meter.start()
-                time.sleep(1)
-                if not Serial.is_alive():
-                    Serial.start()
-                
-            except:
-                print "Unexpected error:", sys.exc_info()
-                Meter = MeterMonitor()
-                Serial = SerialMonitor()
-                
-            time.sleep(1)
-            
+            time.sleep(0.5)
+
     except:
         print "undefined stop"
