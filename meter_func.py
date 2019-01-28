@@ -63,9 +63,12 @@ def run_meter():
                 phaseCrealcomp = fcomp.compress(phaseCreal)
                 phases = [phaseArealcomp,phaseBrealcomp,phaseCrealcomp]
                 for j in phases:
-                    message.append((j & 0xff00)>>8)
                     message.append(j & 0xff)
+                    message.append((j & 0xff00)>>8)
 
+                response = client.read_holding_registers(1148,count = 6,unit = 1)
+                response = client.read_holding_registers(1148,count = 6,unit = 1)
+                response = client.read_holding_registers(1148,count = 6,unit = 1)
                 response = client.read_holding_registers(1148,count = 6,unit = 1)
                 phaseAreactive = (response.registers[0])|(response.registers[1]<<16)
                 phaseBreactive = (response.registers[2])|(response.registers[3]<<16)
@@ -76,8 +79,8 @@ def run_meter():
                 phaseCreactivecomp = fcomp.compress(phaseCreactive)
                 phases = [phaseAreactivecomp,phaseBreactivecomp,phaseCreactivecomp]
                 for j in phases:
-                    message.append((j & 0xff00)>>8)
                     message.append(j & 0xff)
+                    message.append((j & 0xff00)>>8)
                 # #print "Got Response"
                 # for j in range(12):
                 #     message.append((i<<4)|j & 0xFF)
@@ -110,16 +113,19 @@ def serial_monitor():
             timeout=1
         ) as ser:
             while ser_connection:
-                print "Queue: " + repr(Queue)
+                if len(Queue)>0:
+                    print "Queue: " + repr(Queue)
                 if len(Queue) != 0 and ser.read() == '<':
                     ser.write('>')
                     print "got ready signal!"
                     msg = Queue.popleft()
+                    print (msg)
                     for p in msg:
                         ser.write(p)
                     ser.reset_input_buffer()
                 else:
-                    time.sleep(0.5) #SUPPER IMPORTANT AS TO NOT OVERLOAD CPU
+                    time.sleep(0.1) #SUPPER IMPORTANT AS TO NOT OVERLOAD CPU
+                    
     except:
         print "serial error"
         global connection
