@@ -9,6 +9,7 @@ import halfprecisionfloat
 import struct
 from collections import deque
 import subprocess
+import logging
 
 fcomp = halfprecisionfloat.Float16Compressor()
 lst = []
@@ -50,7 +51,7 @@ def meter_init(PORT,BAUD=19200, A=100,B=100,C=100,a=0,b=0,c=0):
     client.close()
 
 
-def run_meter(PORT, BAUD=19200, ITERATIONS=0, debug=True):
+def run_meter(PORT, MSG_SIZE, BAUD=19200, ITERATIONS=0, debug=True):
     """
     packs seconds of data 
     """
@@ -67,16 +68,16 @@ def run_meter(PORT, BAUD=19200, ITERATIONS=0, debug=True):
         connection = client.connect()
         print "connection is "+ str(connection)
         time.sleep(0.5)
-        msg_size = 5
         q = 0
         while(connection and (ITERATIONS==0 or q<ITERATIONS)):
             q+=1
             packed  = []
             message = []
+            #message.append(MSG_SIZE)
             message.append(time.localtime()[4]) #local relative minutes
             message.append(time.localtime()[5]) #local relative seconds
             addrs = [[1010,6,1],[1148,6,1]]
-            for i in range(msg_size):
+            for i in range(MSG_SIZE):
                 start_time = time.time()
                 #print "Polling Response"
                 #Read registers 1010 - 1016 real power
@@ -104,8 +105,11 @@ def run_meter(PORT, BAUD=19200, ITERATIONS=0, debug=True):
                 print "message = " + repr(message) 
 
             
-    except:
-        print "meter disconnected"    
+    except Exception as e:
+        print (e)
+        print (str(e.message))
+        print "meter disconnected"   
+        logging.debug(e)
     client.close()
 
 
@@ -135,17 +139,23 @@ def serial_monitor(debug=True):
                 else:
                     time.sleep(0.1) #SUPPER IMPORTANT AS TO NOT OVERLOAD CPU
                     
-    except:
+    except Exception as e:
         print "serial error"
-        global connection
-        connection  = 0
+        logging.debug(e)
+        
+      
 
 
 
 if __name__=="__main__":
-
-    port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
-    port = port[:(len(port)-1)]
-    meter_init(port,19200,100,100,200,0,0,0)
-    run_meter(port,ITERATIONS=1)
+    while True:
+        try:
+            
+            port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
+            port = port[:(len(port)-1)]
+            meter_init(port,19200,100,100,200,0,1,0)
+            run_meter(port,8,ITERATIONS=0)
+        except:
+            print("exit")
+    
     print ("DONE")

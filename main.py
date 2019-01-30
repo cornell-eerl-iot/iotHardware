@@ -4,6 +4,10 @@ import threading
 import time
 import sys
 import subprocess
+import logging
+
+INTERVAL = 5  #in seconds
+BAUD_RATE = 19200
 
 class SerialMonitor(threading.Thread):
     def __init__(self):
@@ -16,6 +20,7 @@ class SerialMonitor(threading.Thread):
             except:
                 print "error at Serial for FeatherM0"
                 print "Unexpected error:", sys.exc_info()
+                logging.debug(sys.exc_info())
             time.sleep(1)
 
 class MeterMonitor(threading.Thread):
@@ -28,19 +33,22 @@ class MeterMonitor(threading.Thread):
             try:
                 port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
                 port = port[:(len(port)-1)]
-                meter_func.run_meter(port,19200)
+                meter_func.run_meter(port,INTERVAL,BAUD_RATE)
             except:
                 print "error at Serial for Wattnode"
                 print "Unexpected error:", sys.exc_info()
+                logging.debug(sys.exc_info())
             time.sleep(1)
 
 
 
 if __name__ == "__main__":
-    #meter_func.meter_init(100,100,200,0,0,0)
+    logging.basicConfig(filename='/home/pi/iotHardware/error.log',filemode='w',level=logging.DEBUG)
     Meter = MeterMonitor()
     Serial = SerialMonitor()
-    
+    port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
+    port = port[:(len(port)-1)]
+    meter_func.meter_init(port,BAUD_RATE,100,100,200,0,1,0)
     try:
         
         Meter.start()
