@@ -24,7 +24,7 @@ def meter_init(PORT,BAUD=19200, A=100,B=100,C=100,a=0,b=0,c=0):
     #SERIAL = '/dev/ttyUSB0'
     #BAUD = 19200
 
-    client =  modbus.ModbusSerialClient(method='rtu', port=SERIAL,\
+    client =  modbus.ModbusSerialClient(method='rtu', port=PORT,\
         stopbits=1, bytesize=8, timeout=3, baudrate=BAUD, parity='N')
 
     connection = client.connect()
@@ -50,7 +50,7 @@ def meter_init(PORT,BAUD=19200, A=100,B=100,C=100,a=0,b=0,c=0):
     client.close()
 
 
-def run_meter(PORT, BAUD=19200, ITERATIONS=0):
+def run_meter(PORT, BAUD=19200, ITERATIONS=0, debug=True):
     """
     packs seconds of data 
     """
@@ -90,25 +90,26 @@ def run_meter(PORT, BAUD=19200, ITERATIONS=0):
                         message.append(valComp & 0xff)
                         message.append((valComp & 0xff00)>>8)
                 
-                # #print "Got Response"
                 end_time = time.time()
-                print "time diff: " + repr(end_time-start_time)
-                
                 delay  = max(0, 1 - (end_time-start_time)) # how long needed to 
                 # wait for next polling
+                if debug:
+                    print "time diff: " + repr(end_time-start_time)
                 time.sleep(delay) #delay to account for computation time
             for mes in message:
                 packed.append(struct.pack('>B',mes).encode('hex'))
                 
             Queue.append(packed)
-            #print "message = " + repr(message) 
+            if debug:
+                print "message = " + repr(message) 
+
             
     except:
         print "meter disconnected"    
     client.close()
 
 
-def serial_monitor():
+def serial_monitor(debug=True):
     try:
         with serial.Serial(
             port='/dev/serial0',
@@ -119,13 +120,15 @@ def serial_monitor():
             timeout=1
         ) as ser:
             while True:
-                if len(Queue)>0:
+                if len(Queue)>0 and debug:
                     print "Queue: " + repr(Queue)
                 if len(Queue) != 0 and ser.read() == '<':
                     ser.write('>')
-                    print "got ready signal!"
+
                     msg = Queue.popleft()
-                    print (msg)
+                    if debug:
+                        print (msg)
+                        print "got ready signal!"
                     for p in msg:
                         ser.write(p)
                     ser.reset_input_buffer()
@@ -144,5 +147,5 @@ if __name__=="__main__":
     port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
     port = port[:(len(port)-1)]
     meter_init(port,19200,100,100,200,0,0,0)
-    #run_meter()
+    run_meter(port,ITERATIONS=1)
     print ("DONE")

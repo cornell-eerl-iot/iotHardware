@@ -44,7 +44,7 @@ if __name__ == "__main__":
     try:
         
         Meter.start()
-        time.sleep(1)
+        time.sleep(0.5)
         Serial.start()
         while True:
             time.sleep(0.5)
