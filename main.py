@@ -6,7 +6,7 @@ import sys
 import subprocess
 import logging
 
-INTERVAL = 5  #in seconds
+INTERVAL = 8  #in seconds
 BAUD_RATE = 19200
 
 class SerialMonitor(threading.Thread):
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     Serial = SerialMonitor()
     port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
     port = port[:(len(port)-1)]
-    meter_func.meter_init(port,BAUD_RATE,100,100,200,0,1,0)
+    #meter_func.meter_init(port,BAUD_RATE,100,100,200,0,1,0)
     try:
         
         Meter.start()

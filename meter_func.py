@@ -73,9 +73,9 @@ def run_meter(PORT, MSG_SIZE, BAUD=19200, ITERATIONS=0, debug=True):
             q+=1
             packed  = []
             message = []
-            #message.append(MSG_SIZE)
-            message.append(time.localtime()[4]) #local relative minutes
-            message.append(time.localtime()[5]) #local relative seconds
+            message.append(MSG_SIZE&0xFF)
+            message.append(time.localtime()[4]&0xFF) #local relative minutes
+            message.append(time.localtime()[5]&0xFF) #local relative seconds
             addrs = [[1010,6,1],[1148,6,1]]
             for i in range(MSG_SIZE):
                 start_time = time.time()
@@ -102,7 +102,7 @@ def run_meter(PORT, MSG_SIZE, BAUD=19200, ITERATIONS=0, debug=True):
                 
             Queue.append(packed)
             if debug:
-                print "message = " + repr(message) 
+                print "len = " +str(len(message))+  " message = " + repr(message) 
 
             
     except Exception as e:
@@ -131,10 +131,11 @@ def serial_monitor(debug=True):
 
                     msg = Queue.popleft()
                     if debug:
-                        print (msg)
                         print "got ready signal!"
                     for p in msg:
                         ser.write(p)
+                        time.sleep(0.01)
+                        
                     ser.reset_input_buffer()
                 else:
                     time.sleep(0.1) #SUPPER IMPORTANT AS TO NOT OVERLOAD CPU
@@ -154,7 +155,7 @@ if __name__=="__main__":
             port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
             port = port[:(len(port)-1)]
             meter_init(port,19200,100,100,200,0,1,0)
-            run_meter(port,8,ITERATIONS=0)
+            run_meter(port,8,ITERATIONS=3)
         except:
             print("exit")
     
