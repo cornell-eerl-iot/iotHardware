@@ -35,7 +35,7 @@ void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 uint8_t *mydata; //pointer to data to be sent
 osjob_t sendjob;
 
-uint8_t DATA_LENGTH=60; //length of data to be sent
+uint8_t DATA_LENGTH=100; //length of data to be sent
 bool SEND_COMPLETE = true; //indicator used to tell us when sending data is done.
 bool JOINED = false; //inducator when we joined the network
 bool FAILED = false; //connection lost
