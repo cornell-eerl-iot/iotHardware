@@ -10,12 +10,7 @@
 #include "ttn-otaa.h"
 #include <stdlib.h>
 
-bool DEBUG = false;
-
-int size = 2;
-int counter = 0;
-
-
+bool DEBUG = true;
 
 void setup()
 {
@@ -23,12 +18,11 @@ void setup()
         Serial.begin(19200);
     Serial1.begin(115200);
     ttn_otaa_init();
-    counter = 0;
 }
 
 void loop()
 {
-    
+
     if (FAILED)
     {
         ttn_otaa_init();
@@ -36,7 +30,8 @@ void loop()
 
     if (SEND_COMPLETE)
     {
-        if(Serial1.available()==0){ //&& ready){
+        if (Serial1.available() == 0)
+        { //&& ready){
             if (DEBUG)
                 Serial.println("ready");
             Serial1.print('<');
@@ -45,39 +40,43 @@ void loop()
         delay(100);
         while (Serial1.available())
         {
-            if (Serial1.read()=='>')
+            if (Serial1.read() == '>')
             {
-                while (Serial1.available())
-                {           
+                char number_str[2];
+                Serial1.readBytes(number_str, 2);
+
+                DATA_LENGTH = strtol(number_str, NULL, 16) * 12 + 2;
+                Serial.println(DATA_LENGTH);
+                byte num_bytes = 0;
+                while (num_bytes < DATA_LENGTH)
+                {
                     //Serial.print("receiving messages");
-                    char a [size]; 
-                    int count = Serial1.readBytes(a, size);
-                    uint8_t number = strtol(a,NULL,16);
-                    if (DEBUG){
-                        for (int i = 0;i<size;i++){
-                            Serial.print(a[i]);
-                        }
-                        Serial.println("");
-                    }
-                    mydata[counter++] = number;
-                    if (counter > DATA_LENGTH)
-                        counter = 0;
+                    char a[2];
+                    int count = Serial1.readBytes(a, 2);
+                    uint8_t number = strtol(a, NULL, 16);
+                    // if (DEBUG){
+                    //     for (int i = 0;i<size;i++){
+                    //         Serial.print(a[i]);
+                    //     }
+                    //     Serial.println("");
+                    // }
+                    mydata[num_bytes++] = number;
                 }
             }
-            if (DEBUG){
-                for (int i = 0;i<DATA_LENGTH;i++){
-                    Serial.print(mydata[i],HEX);
+            if (DEBUG)
+            {
+                for (int i = 0; i < DATA_LENGTH; i++)
+                {
+                    Serial.print(mydata[i], HEX);
                     Serial.print("|");
                 }
                 Serial.println("");
             }
             do_send(&sendjob);
-            counter = 0;
-        }       
+        }
     }
     else
     {
         os_runloop_once();
     }
-    
 }

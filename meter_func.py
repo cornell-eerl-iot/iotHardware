@@ -9,11 +9,10 @@ import halfprecisionfloat
 import struct
 from collections import deque
 import subprocess
-import logging
 
 fcomp = halfprecisionfloat.Float16Compressor()
 lst = []
-Queue = deque(lst,5)
+Queue = deque(lst,3)
 connection = 0
 
 def meter_init(PORT,BAUD=19200, A=100,B=100,C=100,a=0,b=0,c=0):
@@ -109,7 +108,7 @@ def run_meter(PORT, MSG_SIZE, BAUD=19200, ITERATIONS=0, debug=True):
         print (e)
         print (str(e.message))
         print "meter disconnected"   
-        logging.debug(e)
+        logging.error(str(time.localtime()) + str(e.message))
     client.close()
 
 
@@ -142,7 +141,7 @@ def serial_monitor(debug=True):
                     
     except Exception as e:
         print "serial error"
-        logging.debug(e)
+        logging.error(str(time.localtime())+ str(e.message))
         
       
 
@@ -150,8 +149,7 @@ def serial_monitor(debug=True):
 
 if __name__=="__main__":
     while True:
-        try:
-            
+        try:    
             port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
             port = port[:(len(port)-1)]
             meter_init(port,19200,100,100,200,0,1,0)
