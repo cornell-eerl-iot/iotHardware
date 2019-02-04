@@ -16,7 +16,7 @@ class SerialMonitor(threading.Thread):
     def run(self):
         while True:
             try:
-                meter_func.serial_monitor()
+                meter_func.serial_monitor(False)
             except:
                 print "error at Serial for FeatherM0"
                 print "Unexpected error:", sys.exc_info()
@@ -33,7 +33,7 @@ class MeterMonitor(threading.Thread):
             try:
                 port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
                 port = port[:(len(port)-1)]
-                meter_func.run_meter(port,INTERVAL,BAUD_RATE)
+                meter_func.run_meter(port,INTERVAL,BAUD_RATE,debug=False)
             except:
                 print "error at Serial for Wattnode"
                 print "Unexpected error:", sys.exc_info()
