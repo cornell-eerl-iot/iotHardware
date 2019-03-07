@@ -50,7 +50,7 @@ def meter_init(PORT,BAUD=19200, A=100,B=100,C=100,a=0,b=0,c=0):
     client.close()
 
 
-def run_meter(PORT, MSG_SIZE, BAUD=19200, ITERATIONS=0, debug=True):
+def run_meter(PORT, INTERVAL, PHASE, BAUD=19200, ITERATIONS=0, debug=True):
     """
     packs seconds of data 
     """
@@ -67,16 +67,20 @@ def run_meter(PORT, MSG_SIZE, BAUD=19200, ITERATIONS=0, debug=True):
         connection = client.connect()
         print "connection is "+ str(connection)
         time.sleep(0.5)
-        q = 0
-        while(connection and (ITERATIONS==0 or q<ITERATIONS)):
-            q+=1
+        interation_counter = 0
+        num_regs_per_phase   = PHASE*2 #need to read real and reactive power regs
+        package_length = INTERVAL*num_regs_per_phase*PHASE*2 #bytes/phase
+        header_length  = 2
+        msg_length    = package_length + header_length
+        while(connection and (ITERATIONS==0 or interation_counter<ITERATIONS)):
+            interation_counter+=1
             packed  = []
             message = []
-            message.append(MSG_SIZE&0xFF)
+            message.append(msg_length&0xFF)          #Doesn't count since it gets read
             message.append(time.localtime()[4]&0xFF) #local relative minutes
             message.append(time.localtime()[5]&0xFF) #local relative seconds
-            addrs = [[1010,6,1],[1148,6,1]]
-            for i in range(MSG_SIZE):
+            addrs = [[1010,num_regs_per_phase,1],[1148,num_regs_per_phase,1]]
+            for i in range(INTERVAL):
                 start_time = time.time()
                 #print "Polling Response"
                 #Read registers 1010 - 1016 real power
@@ -153,7 +157,7 @@ if __name__=="__main__":
             port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
             port = port[:(len(port)-1)]
             meter_init(port,19200,100,100,200,0,1,0)
-            run_meter(port,8,ITERATIONS=3)
+            run_meter(port,8,2,ITERATIONS=3)
         except:
             print("exit")
     

@@ -5,9 +5,13 @@ import time
 import sys
 import subprocess
 import logging
+import math
 
-INTERVAL = 8  #in seconds
-BAUD_RATE = 19200
+MAX_MSG_SIZE   = 100  #in bytes
+REGS_PER_PHASE = 2  #Need to read real and reactive power registers : 2 regs
+BYTE_SIZE_PER_REG = 2  #We reduce the size of each reading from 4 to 2 bytes
+BAUD_RATE = 19200  #Baud rate of the Meter 
+PHASE     = 2   #Number of phases used usually 2 or 3
 
 class SerialMonitor(threading.Thread):
     def __init__(self):
@@ -31,9 +35,10 @@ class MeterMonitor(threading.Thread):
     def run(self):
         while True:
             try:
+                interval = int(math.floor(MAX_MSG_SIZE/(REGS_PER_PHASE*BYTE_SIZE_PER_REG*PHASE)))
                 port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
                 port = port[:(len(port)-1)]
-                meter_func.run_meter(port,INTERVAL,BAUD_RATE,debug=False)
+                meter_func.run_meter(port,interval,PHASE,BAUD_RATE,debug=False)
             except:
                 print "error at Serial for Wattnode"
                 print "Unexpected error:", sys.exc_info()
@@ -50,6 +55,7 @@ if __name__ == "__main__":
     port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
     port = port[:(len(port)-1)]
     meter_func.meter_init(port,BAUD_RATE,100,100,200,0,1,0)
+
     try:
         
         Meter.start()
