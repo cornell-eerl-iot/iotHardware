@@ -46,6 +46,7 @@ void loop()
                 Serial1.readBytes(number_str, 2);
 
                 DATA_LENGTH = strtol(number_str, NULL, 16);
+                Serial.print(F("Data Length: "));
                 Serial.println(DATA_LENGTH);
                 byte num_bytes = 0;
                 while (num_bytes < DATA_LENGTH)
@@ -55,7 +56,7 @@ void loop()
                     int count = Serial1.readBytes(a, 2);
                     uint8_t number = strtol(a, NULL, 16);
                     // if (DEBUG){
-                    //     for (int i = 0;i<size;i++){
+                    //     for (int i = 0;i<2;i++){
                     //         Serial.print(a[i]);
                     //     }
                     //     Serial.println("");
