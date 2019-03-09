@@ -32,8 +32,8 @@ void loop()
     {
         if (Serial1.available() == 0)
         { //&& ready){
-            if (DEBUG)
-                Serial.println("ready");
+            // if (DEBUG)
+            //     Serial.println("ready");
             Serial1.print('<');
             Serial1.flush();
         }
@@ -45,7 +45,7 @@ void loop()
                 char number_str[2];
                 Serial1.readBytes(number_str, 2);
 
-                DATA_LENGTH = strtol(number_str, NULL, 16) * 12 + 2;
+                DATA_LENGTH = strtol(number_str, NULL, 16);
                 Serial.println(DATA_LENGTH);
                 byte num_bytes = 0;
                 while (num_bytes < DATA_LENGTH)
