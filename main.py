@@ -16,7 +16,7 @@ class SerialMonitor(threading.Thread):
     def run(self):
         while True:
             try:
-                meter_func.serial_monitor(False)
+                meter_func.serial_monitor(True)
             except:
                 print "error at Serial for FeatherM0"
                 print "Unexpected error:", sys.exc_info()

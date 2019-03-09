@@ -93,8 +93,8 @@ def run_meter(PORT, MSG_SIZE, BAUD=19200, ITERATIONS=0, debug=True):
                 end_time = time.time()
                 delay  = max(0, 1 - (end_time-start_time)) # how long needed to 
                 # wait for next polling
-                if debug:
-                    print "time diff: " + repr(end_time-start_time)
+                #if debug:
+                #   print "time diff: " + repr(end_time-start_time)
                 time.sleep(delay) #delay to account for computation time
             for mes in message:
                 packed.append(struct.pack('>B',mes).encode('hex'))
@@ -102,7 +102,7 @@ def run_meter(PORT, MSG_SIZE, BAUD=19200, ITERATIONS=0, debug=True):
             Queue.append(packed)
             if debug:
                 print "len = " +str(len(message))+  " message = " + repr(message) 
-
+            
             
     except Exception as e:
         print (e)
@@ -136,8 +136,8 @@ def serial_monitor(debug=True):
                         time.sleep(0.01)
                         
                     ser.reset_input_buffer()
-                else:
-                    time.sleep(0.1) #SUPPER IMPORTANT AS TO NOT OVERLOAD CPU
+                
+                time.sleep(0.5) #SUPPER IMPORTANT AS TO NOT OVERLOAD CPU
                     
     except Exception as e:
         print "serial error"
@@ -152,7 +152,7 @@ if __name__=="__main__":
         try:    
             port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
             port = port[:(len(port)-1)]
-            meter_init(port,19200,100,100,200,0,1,0)
+            #meter_init(port,19200,100,100,200,0,1,0)
             run_meter(port,8,ITERATIONS=3)
         except:
             print("exit")
