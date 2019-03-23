@@ -68,18 +68,20 @@ def run_meter(PORT, INTERVAL, PHASE, BAUD=19200, ITERATIONS=0, debug=True):
         print "connection is "+ str(connection)
         time.sleep(0.5)
         interation_counter = 0
-        num_regs_per_phase   = PHASE*2 #need to read real and reactive power regs
+        num_regs_per_phase   = 2 #need to read real and reactive power regs
         package_length = INTERVAL*num_regs_per_phase*PHASE*2 #bytes/phase
-        header_length  = 2
+        header_length  = 3
         msg_length    = package_length + header_length
+        #print("msg_length: " +str(msg_length))
         while(connection and (ITERATIONS==0 or interation_counter<ITERATIONS)):
             interation_counter+=1
             packed  = []
             message = []
             message.append(msg_length&0xFF)          #Doesn't count since it gets read
+            message.append(PHASE &0xFF)
             message.append(time.localtime()[4]&0xFF) #local relative minutes
             message.append(time.localtime()[5]&0xFF) #local relative seconds
-            addrs = [[1010,num_regs_per_phase,1],[1148,num_regs_per_phase,1]]
+            addrs = [[1010,num_regs_per_phase*2,1],[1148,num_regs_per_phase*2,1]]
             for i in range(INTERVAL):
                 start_time = time.time()
                 #print "Polling Response"
@@ -97,15 +99,15 @@ def run_meter(PORT, INTERVAL, PHASE, BAUD=19200, ITERATIONS=0, debug=True):
                 end_time = time.time()
                 delay  = max(0, 1 - (end_time-start_time)) # how long needed to 
                 # wait for next polling
-                #if debug:
-                #   print "time diff: " + repr(end_time-start_time)
+                if debug:
+                   print "time diff: " + repr(end_time-start_time)
                 time.sleep(delay) #delay to account for computation time
             for mes in message:
                 packed.append(struct.pack('>B',mes).encode('hex'))
                 
             Queue.append(packed)
             if debug:
-                print "len = " +str(len(message))+  " message = " + repr(message) 
+                print "len = " +str(len(message))+  ", message = " + repr(message) 
             
             
     except Exception as e:

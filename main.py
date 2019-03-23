@@ -13,6 +13,7 @@ BYTE_SIZE_PER_REG = 2  #We reduce the size of each reading from 4 to 2 bytes
 BAUD_RATE = 19200  #Baud rate of the Meter 
 PHASE     = 2   #Number of phases used usually 2 or 3
 
+
 class SerialMonitor(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -36,9 +37,10 @@ class MeterMonitor(threading.Thread):
         while True:
             try:
                 interval = int(math.floor(MAX_MSG_SIZE/(REGS_PER_PHASE*BYTE_SIZE_PER_REG*PHASE)))
+                print ("Interval: " + str(interval))
                 port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
                 port = port[:(len(port)-1)]
-                meter_func.run_meter(port,interval,PHASE,BAUD_RATE,debug=False)
+                meter_func.run_meter(port,interval,PHASE,BAUD_RATE,debug=True)
             except:
                 print "error at Serial for Wattnode"
                 print "Unexpected error:", sys.exc_info()
