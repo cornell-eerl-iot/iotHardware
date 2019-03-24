@@ -113,7 +113,7 @@ def run_meter(PORT, INTERVAL, PHASE, ADDRS, BAUD=19200, debug=True):
         print (e)
         print (str(e.message))
         print "meter disconnected"   
-        logging.error(str(time.localtime()) + str(e.message))
+        logging.error(str(time.localtime()) + "RUN_METER() "+str(e.message))
     client.close()
 
 
@@ -146,7 +146,7 @@ def serial_monitor(debug=True):
                     
     except Exception as e:
         print "serial error"
-        logging.error(str(time.localtime())+ str(e.message))
+        logging.error(str(time.localtime()) + " SERIAL_MONITOR "+ str(e.message))
         
       
 
