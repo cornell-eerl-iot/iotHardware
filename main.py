@@ -6,13 +6,7 @@ import sys
 import subprocess
 import logging
 import math
-
-MAX_MSG_SIZE   = 100  #in bytes
-REGS_PER_PHASE = 2  #Need to read real and reactive power registers : 2 regs
-BYTE_SIZE_PER_REG = 2  #We reduce the size of each reading from 4 to 2 bytes
-BAUD_RATE = 19200  #Baud rate of the Meter 
-PHASE     = 2   #Number of phases used usually 2 or 3
-
+from meter_settings import *
 
 class SerialMonitor(threading.Thread):
     def __init__(self):
@@ -36,11 +30,11 @@ class MeterMonitor(threading.Thread):
     def run(self):
         while True:
             try:
-                interval = int(math.floor(MAX_MSG_SIZE/(REGS_PER_PHASE*BYTE_SIZE_PER_REG*PHASE)))
+                interval = int(math.floor(MAX_MSG_SIZE/(READS_PER_PHASE*BYTE_SIZE_PER_READ*PHASE)))
                 print ("Interval: " + str(interval))
                 port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
                 port = port[:(len(port)-1)]
-                meter_func.run_meter(port,interval,PHASE,BAUD_RATE,debug=True)
+                meter_func.run_meter(port,interval,PHASE,addrs,BAUD_RATE,debug=True)
             except:
                 print "error at Serial for Wattnode"
                 print "Unexpected error:", sys.exc_info()
@@ -50,14 +44,16 @@ class MeterMonitor(threading.Thread):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(filename='/home/pi/iotHardware/error.log',filemode='w',level=logging.ERROR)
+    logging.basicConfig(filename='/home/pi/iotHardware/error.log'+str(time.localtime()),filemode='w',level=logging.ERROR)
     Meter = MeterMonitor()
     Serial = SerialMonitor()
     # Gets the serial port for the USB modbus converter
     port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
     port = port[:(len(port)-1)]
-    meter_func.meter_init(port,BAUD_RATE,100,100,200,0,1,0)
-
+    meter_func.meter_init(port,BAUD_RATE,CT_SIZE_A,CT_SIZE_B,CT_SIZE_C,0,0,0)
+    addrs = []
+    for i in REG_ADDRS:
+        addrs.append([REG_ADDRS[0],PHASE*REGS_PER_READING,REG_ADDRS[1]])
     try:
         
         Meter.start()

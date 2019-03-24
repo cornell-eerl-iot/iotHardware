@@ -9,6 +9,8 @@ import halfprecisionfloat
 import struct
 from collections import deque
 import subprocess
+from meter_settings import *
+
 
 fcomp = halfprecisionfloat.Float16Compressor()
 lst = []
@@ -29,7 +31,7 @@ def meter_init(PORT,BAUD=19200, A=100,B=100,C=100,a=0,b=0,c=0):
 
     connection = client.connect()
     print ("initializing meter, connection = " +str(connection) )
-    time.sleep(1)
+    time.sleep(0.5)
     
     print ("Reading CT settings")
     response = client.read_holding_registers(1602,count=4,unit=1)
@@ -50,7 +52,7 @@ def meter_init(PORT,BAUD=19200, A=100,B=100,C=100,a=0,b=0,c=0):
     client.close()
 
 
-def run_meter(PORT, INTERVAL, PHASE, BAUD=19200, ITERATIONS=0, debug=True):
+def run_meter(PORT, INTERVAL, PHASE, ADDRS, BAUD=19200, debug=True):
     """
     packs seconds of data 
     """
@@ -67,29 +69,26 @@ def run_meter(PORT, INTERVAL, PHASE, BAUD=19200, ITERATIONS=0, debug=True):
         connection = client.connect()
         print "connection is "+ str(connection)
         time.sleep(0.5)
-        interation_counter = 0
-        num_regs_per_phase   = 2 #need to read real and reactive power regs
-        package_length = INTERVAL*num_regs_per_phase*PHASE*2 #bytes/phase
-        header_length  = 3
-        msg_length    = package_length + header_length
+        package_length = INTERVAL*PHASE*BYTE_SIZE_PER_READ*READS_PER_PHASE
+         #PHASE*bytes/phase ; we are polling real and reactive
+        header_length  = 3   #header msgs such as time and phase
+        msg_length     = package_length + header_length
         #print("msg_length: " +str(msg_length))
-        while(connection and (ITERATIONS==0 or interation_counter<ITERATIONS)):
-            interation_counter+=1
+        while(connection):
             packed  = []
             message = []
             message.append(msg_length&0xFF)          #Doesn't count since it gets read
             message.append(PHASE &0xFF)
             message.append(time.localtime()[4]&0xFF) #local relative minutes
             message.append(time.localtime()[5]&0xFF) #local relative seconds
-            addrs = [[1010,num_regs_per_phase*2,1],[1148,num_regs_per_phase*2,1]]
             for i in range(INTERVAL):
                 start_time = time.time()
                 #print "Polling Response"
                 #Read registers 1010 - 1016 real power
                 #1148  - 1153 reactive power
-                for j in range(len(addrs)):
-                    response = client.read_holding_registers(addrs[j][0],\
-                    count = addrs[j][1],unit = addrs[j][2])
+                for j in range(len(ADDRS)):
+                    response = client.read_holding_registers(ADDRS[j][0],\
+                    count = ADDRS[j][1],unit = ADDRS[j][2])
                     for k in range(0,len(response.registers),2):
                         val = (response.registers[k])|(response.registers[k+1]<<16)
                         valComp = fcomp.compress(val)
@@ -159,7 +158,7 @@ if __name__=="__main__":
             port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
             port = port[:(len(port)-1)]
             meter_init(port,19200,100,100,200,0,1,0)
-            run_meter(port,8,2,ITERATIONS=3)
+            #run_meter(port,8,2)
         except:
             print("exit")
     
