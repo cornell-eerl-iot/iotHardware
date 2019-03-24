@@ -52,7 +52,7 @@ def meter_init(PORT,BAUD=19200, A=100,B=100,C=100,a=0,b=0,c=0):
     client.close()
 
 
-def run_meter(PORT, INTERVAL, PHASE, ADDRS, BAUD=19200, debug=True):
+def run_meter(PORT, INTERVAL, PHASE, ADDRS, BAUD=19200, debug=False):
     """
     packs seconds of data 
     """
@@ -73,7 +73,6 @@ def run_meter(PORT, INTERVAL, PHASE, ADDRS, BAUD=19200, debug=True):
          #PHASE*bytes/phase ; we are polling real and reactive
         header_length  = 3   #header msgs such as time and phase
         msg_length     = package_length + header_length
-        #print("msg_length: " +str(msg_length))
         while(connection):
             packed  = []
             message = []
@@ -90,7 +89,10 @@ def run_meter(PORT, INTERVAL, PHASE, ADDRS, BAUD=19200, debug=True):
                     response = client.read_holding_registers(ADDRS[j][0],\
                     count = ADDRS[j][1],unit = ADDRS[j][2])
                     for k in range(0,len(response.registers),2):
-                        val = (response.registers[k])|(response.registers[k+1]<<16)
+                        val = (response.registers[k])|(response.registers[k+1]<<16) 
+                        if debug:
+                            print ADDRS[j]
+                            print((struct.unpack('f',struct.pack('I',val))))
                         valComp = fcomp.compress(val)
                         message.append(valComp & 0xff)
                         message.append((valComp & 0xff00)>>8)
@@ -157,8 +159,8 @@ if __name__=="__main__":
         try:    
             port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
             port = port[:(len(port)-1)]
-            meter_init(port,19200,100,100,200,0,1,0)
-            #run_meter(port,8,2)
+            #meter_init(port,19200,100,100,200,0,1,0)
+            run_meter(port,12,2,[[1010,4,1]])
         except:
             print("exit")
     

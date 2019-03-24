@@ -19,7 +19,7 @@ class SerialMonitor(threading.Thread):
             except:
                 print "error at Serial for FeatherM0"
                 print "Unexpected error:", sys.exc_info()
-                logging.error(str(time.localtime()) + str(sys.exc_info()))
+                logging.error(str(time.localtime()) +"SERIALMONITOR()"+ str(sys.exc_info()))
             time.sleep(1)
 
 class MeterMonitor(threading.Thread):
@@ -38,7 +38,7 @@ class MeterMonitor(threading.Thread):
             except:
                 print "error at Serial for Wattnode"
                 print "Unexpected error:", sys.exc_info()
-                logging.error(str(time.localtime()) + str(sys.exc_info()))
+                logging.error(str(time.localtime()) +" METERMONITOR() "+ str(sys.exc_info()))
             time.sleep(1)
 
 
@@ -50,10 +50,11 @@ if __name__ == "__main__":
     # Gets the serial port for the USB modbus converter
     port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
     port = port[:(len(port)-1)]
-    meter_func.meter_init(port,BAUD_RATE,CT_SIZE_A,CT_SIZE_B,CT_SIZE_C,0,0,0)
+    #meter_func.meter_init(port,BAUD_RATE,CT_SIZE_A,CT_SIZE_B,CT_SIZE_C,0,0,0)
     addrs = []
-    for i in REG_ADDRS:
-        addrs.append([REG_ADDRS[0],PHASE*REGS_PER_READING,REG_ADDRS[1]])
+    for i in range(len(REG_ADDRS)):
+        addrs.append([REG_ADDRS[i][0],PHASE*REGS_PER_READING,REG_ADDRS[i][1]])
+
     try:
         
         Meter.start()
