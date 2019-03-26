@@ -52,7 +52,7 @@ def meter_init(PORT,BAUD=19200, A=100,B=100,C=100,a=0,b=0,c=0):
     client.close()
 
 
-def run_meter(PORT, INTERVAL, PHASE, ADDRS, BAUD=19200, debug=False):
+def run_meter(PORT, INTERVAL, PHASE, ADDRS, BAUD=19200, debug=True):
     """
     packs seconds of data 
     """
@@ -71,12 +71,13 @@ def run_meter(PORT, INTERVAL, PHASE, ADDRS, BAUD=19200, debug=False):
         time.sleep(0.5)
         package_length = INTERVAL*PHASE*BYTE_SIZE_PER_READ*READS_PER_PHASE
          #PHASE*bytes/phase ; we are polling real and reactive
-        header_length  = 3   #header msgs such as time and phase
+        header_length  = 4   #header msgs such as time and phase
         msg_length     = package_length + header_length
         while(connection):
             packed  = []
             message = []
             message.append(msg_length&0xFF)          #Doesn't count since it gets read
+            message.append(0xF1)                     #Meter function
             message.append(PHASE &0xFF)
             message.append(time.localtime()[4]&0xFF) #local relative minutes
             message.append(time.localtime()[5]&0xFF) #local relative seconds
