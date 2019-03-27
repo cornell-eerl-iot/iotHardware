@@ -6,40 +6,59 @@ function Decoder(bytes, port) {
     var s = 0; //seconds
     var ex = "";
     // decoded["_Connection Number"] = bytes[i++];
-    var phase = bytes[i++]
-    decoded["_Minutes"] = bytes[i++];
-    decoded["_Seconds"] = bytes[i++];
     
-    while(i<bytes.length){
-        if (phase == 2){
+    if (bytes.length === 99){
+        var phase = bytes[i++];
+        decoded["_Minutes"] = bytes[i++];
+        decoded["_Seconds"] = bytes[i++];
+        
+        while(i<bytes.length){
             if (s<10){
                 ex = "0";
             }else{
                 ex = "";
             }
-            decoded[ex+s+" Grid_Power-A-Real"] = bytes[i++]|(bytes[i++]<<8);
-            decoded[ex+s+" Grid_Power-B-Real"] = bytes[i++]|(bytes[i++]<<8);
-            decoded[ex+s+" Grid_Power-A-Reactive"] = bytes[i++]|(bytes[i++]<<8);
-            decoded[ex+s++ +" Grid_Power-B-Reactive"] = bytes[i++]|(bytes[i++]<<8);
-        }
-        else if (phase == 3){
-            if (s<10){
-                ex = "0";
-            }else{
-                ex = "";
+            if (phase == 2){
+                decoded[ex+s+" Grid_Power-A-Real"] = bytes[i++]|(bytes[i++]<<8);
+                decoded[ex+s+" Grid_Power-B-Real"] = bytes[i++]|(bytes[i++]<<8);
+                decoded[ex+s+" Grid_Power-A-Reactive"] = bytes[i++]|(bytes[i++]<<8);
+                decoded[ex+s++ +" Grid_Power-B-Reactive"] = bytes[i++]|(bytes[i++]<<8);
             }
-            decoded[ex+s+" Grid_Power-A-Real"] = bytes[i++]|(bytes[i++]<<8);
-            decoded[ex+s+" Grid_Power-B-Real"] = bytes[i++]|(bytes[i++]<<8);
-            decoded[ex+s+" Grid_Power-C-Real"] = bytes[i++]|(bytes[i++]<<8);
-            decoded[ex+s+" Grid_Power-A-Reactive"] = bytes[i++]|(bytes[i++]<<8);
-            decoded[ex+s+" Grid_Power-B-Reactive"] = bytes[i++]|(bytes[i++]<<8);
-            decoded[ex+s++ +" Grid_Power-C-Reactive"] = bytes[i++]|(bytes[i++]<<8);
+            else if (phase == 3){
+                decoded[ex+s+" Grid_Power-A-Real"] = bytes[i++]|(bytes[i++]<<8);
+                decoded[ex+s+" Grid_Power-B-Real"] = bytes[i++]|(bytes[i++]<<8);
+                decoded[ex+s+" Grid_Power-C-Real"] = bytes[i++]|(bytes[i++]<<8);
+                decoded[ex+s+" Grid_Power-A-Reactive"] = bytes[i++]|(bytes[i++]<<8);
+                decoded[ex+s+" Grid_Power-B-Reactive"] = bytes[i++]|(bytes[i++]<<8);
+                decoded[ex+s++ +" Grid_Power-C-Reactive"] = bytes[i++]|(bytes[i++]<<8);
+            }
+          
         }
-      
     }
+    else{
+        decoded["_Connection Number"] = bytes[i++];
+        decoded["_Minutes"] = bytes[i++];
+        decoded["_Seconds"] = bytes[i++];
+        
+        while(i<bytes.length){
+            decoded[s+" Grid_Power-A-Real"] = bytes[i++]|(bytes[i++]<<8);
+            decoded[s+" Grid_Power-B-Real"] = bytes[i++]|(bytes[i++]<<8);
+            decoded[s+" Grid_Power-A-Reactive"] = bytes[i++]|(bytes[i++]<<8);
+            decoded[s+" Grid_Power-B-Reactive"] = bytes[i++]|(bytes[i++]<<8);
+            decoded[s+" AHU-A-Real"] = bytes[i++]|(bytes[i++]<<8);
+            decoded[s+" AHU/RTU-B-Real"] = bytes[i++]|(bytes[i++]<<8);
+            decoded[s+" RTU-A-Real"] = bytes[i++]|(bytes[i++]<<8);
+            decoded[s+" AHU-A-Reactive"] = bytes[i++]|(bytes[i++]<<8);
+            decoded[s+" AHU/RTU-B-Reactive"] = bytes[i++]|(bytes[i++]<<8);
+            decoded[s++ +" RTU-A-Reactive"] = bytes[i++]|(bytes[i++]<<8);
+            
+        }
+    }
+
   
     return decoded;
-  }
+}
+
 
 function Converter(decoded, port) {
     // Merge, split or otherwise
