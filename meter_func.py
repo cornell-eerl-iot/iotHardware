@@ -101,24 +101,16 @@ def run_meter(PORT, INTERVAL, PHASE, ADDRS, BAUD=19200, debug=True):
                 end_time = time.time()
                 delay  = max(0, 1 - (end_time-start_time)) # how long needed to 
                 # wait for next polling
-<<<<<<< HEAD
                 #if debug:
                 #   print "time diff: " + repr(end_time-start_time)
-=======
-                if debug:
-                   print "time diff: " + repr(end_time-start_time)
->>>>>>> 70597dd8ccebb81385464d78698f901356396eee
                 time.sleep(delay) #delay to account for computation time
             for mes in message:
                 packed.append(struct.pack('>B',mes).encode('hex'))
                 
             Queue.append(packed)
             if debug:
-<<<<<<< HEAD
                 print "len = " +str(len(message))+  " message = " + repr(message) 
-=======
-                print "len = " +str(len(message))+  ", message = " + repr(message) 
->>>>>>> 70597dd8ccebb81385464d78698f901356396eee
+
             
             
     except Exception as e:
@@ -170,11 +162,7 @@ if __name__=="__main__":
             port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
             port = port[:(len(port)-1)]
             #meter_init(port,19200,100,100,200,0,1,0)
-<<<<<<< HEAD
-            run_meter(port,8,ITERATIONS=3)
-=======
             run_meter(port,12,2,[[1010,4,1]])
->>>>>>> 70597dd8ccebb81385464d78698f901356396eee
         except:
             print("exit")
     
