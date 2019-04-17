@@ -14,15 +14,15 @@ import sys
 import halfprecisionfloat
 import struct
 
-'''
+
 logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
-'''
+
 time_limit = 10
 start = time.time()
 
-SERIAL = '/dev/ttyUSB1'
+SERIAL = '/dev/ttyUSB0'
 BAUD = 19200
 
 client =  modbus.ModbusSerialClient(method='rtu', port=SERIAL,\
