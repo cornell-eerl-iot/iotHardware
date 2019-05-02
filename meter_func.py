@@ -110,10 +110,6 @@ def run_meter(PORT, INTERVAL, PHASE, ADDRS, BAUD=19200, debug=True):
             Queue.append(packed)
             if debug:
                 print "len = " +str(len(message))+  " message = " + repr(message) 
-<<<<<<< HEAD
-=======
-
->>>>>>> d00cc2dec81b96aefd741a29feb9bd878b497983
             
             
     except Exception as e:
