@@ -50,7 +50,7 @@ if __name__ == "__main__":
     # Gets the serial port for the USB modbus converter
     port = subprocess.check_output("ls /dev/ttyUSB*", shell=True) 
     port = port[:(len(port)-1)]
-    meter_func.meter_init(port,BAUD_RATE,CT_SIZE_A,CT_SIZE_B,CT_SIZE_C,0,0,0)
+    meter_func.meter_init(port,BAUD_RATE,CT_SIZE_A,CT_SIZE_B,CT_SIZE_C,DIR_A,DIR_B,DIR_C)
     addrs = []
     for i in range(len(REG_ADDRS)):
         addrs.append([REG_ADDRS[i][0],PHASE*REGS_PER_READING,REG_ADDRS[i][1]])
